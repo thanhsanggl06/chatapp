@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { userRegister } from "../store/actions/authAction";
 
+
 const Register = () => {
   const dispatch = useDispatch();
 
