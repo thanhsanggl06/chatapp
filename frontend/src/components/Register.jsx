@@ -1,10 +1,18 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { userRegister } from "../store/actions/authAction";
-
+import { useAlert } from "react-alert";
+import { ERROR_MESSAGE_CLEAR, SUCCESS_MESSAGE_CLEAR } from "../store/types/authType";
 
 const Register = () => {
+  const alert = useAlert();
+  const navigate = useNavigate();
+
+  const { loading, authenticate, error, successMessage, myInfo } = useSelector((state) => state.auth);
+
+  console.log(myInfo);
+
   const dispatch = useDispatch();
 
   const [state, setState] = useState({
@@ -62,10 +70,21 @@ const Register = () => {
     formData.append("gender", gender);
 
     dispatch(userRegister(formData));
-
-    console.log(state);
-    console.log(gender);
   };
+
+  useEffect(() => {
+    if (authenticate) {
+      navigate("/");
+    }
+    if (successMessage) {
+      alert.success(successMessage);
+      dispatch({ type: SUCCESS_MESSAGE_CLEAR });
+    }
+    if (error) {
+      error.map((err) => alert.error(err));
+      dispatch({ type: ERROR_MESSAGE_CLEAR });
+    }
+  }, [successMessage, error, authenticate]);
 
   return (
     <div className="register">
