@@ -57,9 +57,9 @@ module.exports.userRegister = (req, res) => {
     if (password && password.length < 6) {
       error.push("Mật khẩu phải có ít nhất 6 kí tự");
     }
-    if (Object.keys(files).length === 0) {
-      error.push("Please provide user image");
-    }
+    // if (Object.keys(files).length === 0) {
+    //   error.push("Please provide user image");
+    // }
 
     // If invalid
     if (error.length > 0) {
@@ -71,80 +71,139 @@ module.exports.userRegister = (req, res) => {
     }
     // if valid data
     else {
-      const getImageName = files.image.originalFilename;
-      const randNumber = Math.floor(Math.random() * 99999);
-      const newImageName = randNumber + getImageName;
-      files.image.originalFilename = newImageName;
+      // if default avatar
+      if (Object.keys(files).length === 0) {
+        try {
+          // check user existing
+          const checkUser = await registerModel.findOne({
+            email: email,
+          });
 
-      const newPath = __dirname + `../../../frontend/public/image/${files.image.originalFilename}`;
+          //if user existing
+          if (checkUser) {
+            res.status(404).json({
+              error: {
+                errorMessage: ["Email bạn sử dụng đã tồn tại trong hệ thống!"],
+              },
+            });
+          } else {
+            // add user to db
+            const userCreate = await registerModel.create({
+              username,
+              email,
+              birthday,
+              gender,
+              password: await bcrypt.hash(password, 10),
+              image: fields.image,
+            });
 
-      try {
-        // check user existing
-        const checkUser = await registerModel.findOne({
-          email: email,
-        });
+            // generate jwt token
+            const token = jwt.sign(
+              {
+                id: userCreate._id,
+                email: userCreate.email,
+                username: userCreate.username,
+                image: userCreate.image,
+                gender: userCreate.gender,
+                birthday: userCreate.birthday,
+              },
+              process.env.SECRET,
+              {
+                expiresIn: process.env.TOKEN_EXP,
+              }
+            );
 
-        //if user existing
-        if (checkUser) {
-          res.status(404).json({
+            const expirationDate = new Date();
+            expirationDate.setDate(expirationDate.getDate() + 7);
+
+            res.status(201).cookie("authToken", token, { expires: expirationDate }).json({
+              successMessage: "Đăng ký thành công!",
+              token: token,
+            });
+          }
+        } catch (error) {
+          res.status(500).json({
             error: {
-              errorMessage: ["Email bạn sử dụng đã tồn tại trong hệ thống!"],
+              errorMessage: ["Internal Server Error"],
             },
           });
-        } else {
-          fs.copyFile(files.image.filepath, newPath, async (error) => {
-            // if copy file image success
-            if (!error) {
-              // add user to db
-              const userCreate = await registerModel.create({
-                username,
-                email,
-                birthday,
-                gender,
-                password: await bcrypt.hash(password, 10),
-                image: files.image.originalFilename,
-              });
+        }
+      } else {
+        const getImageName = files.image.originalFilename;
+        const randNumber = Math.floor(Math.random() * 99999);
+        const newImageName = randNumber + getImageName;
+        files.image.originalFilename = newImageName;
 
-              // generate jwt token
-              const token = jwt.sign(
-                {
-                  id: userCreate._id,
-                  email: userCreate.email,
-                  username: userCreate.username,
-                  image: userCreate.image,
-                  gender: userCreate.gender,
-                  birthday: userCreate.birthday,
-                },
-                process.env.SECRET,
-                {
-                  expiresIn: process.env.TOKEN_EXP,
-                }
-              );
+        const newPath = __dirname + `../../../frontend/public/image/${files.image.originalFilename}`;
 
-              const expirationDate = new Date();
-              expirationDate.setDate(expirationDate.getDate() + 7);
+        try {
+          // check user existing
+          const checkUser = await registerModel.findOne({
+            email: email,
+          });
 
-              res.status(201).cookie("authToken", token, { expires: expirationDate }).json({
-                successMessage: "Đăng ký thành công!",
-                token: token,
-              });
-            }
-            // copy file image fail
-            else {
-              res.status(500).json({
-                error: {
-                  errorMessage: ["Internal Server Error"],
-                },
-              });
-            }
+          //if user existing
+          if (checkUser) {
+            res.status(404).json({
+              error: {
+                errorMessage: ["Email bạn sử dụng đã tồn tại trong hệ thống!"],
+              },
+            });
+          } else {
+            fs.copyFile(files.image.filepath, newPath, async (error) => {
+              // if copy file image success
+              if (!error) {
+                // add user to db
+                const userCreate = await registerModel.create({
+                  username,
+                  email,
+                  birthday,
+                  gender,
+                  password: await bcrypt.hash(password, 10),
+                  image: files.image.originalFilename,
+                });
+
+                // generate jwt token
+                const token = jwt.sign(
+                  {
+                    id: userCreate._id,
+                    email: userCreate.email,
+                    username: userCreate.username,
+                    image: userCreate.image,
+                    gender: userCreate.gender,
+                    birthday: userCreate.birthday,
+                  },
+                  process.env.SECRET,
+                  {
+                    expiresIn: process.env.TOKEN_EXP,
+                  }
+                );
+
+                const expirationDate = new Date();
+                expirationDate.setDate(expirationDate.getDate() + 7);
+
+                res.status(201).cookie("authToken", token, { expires: expirationDate }).json({
+                  successMessage: "Đăng ký thành công!",
+                  token: token,
+                });
+              }
+              // copy file image fail
+              else {
+                res.status(500).json({
+                  error: {
+                    errorMessage: ["Internal Server Error"],
+                  },
+                });
+              }
+            });
+          }
+        } catch (error) {
+          res.status(500).json({
+            error: {
+              errorMessage: ["Internal Server Error"],
+            },
           });
         }
-      } catch (error) {
-        res.status(500).json({
-          error: {
-            errorMessage: ["Internal Server Error"],
-          },
-        });
       }
     }
   });
@@ -153,7 +212,7 @@ module.exports.userRegister = (req, res) => {
 //Login Handle
 module.exports.userLogin = async (req, res) => {
   const error = [];
-  console.log(req);
+  // console.log(req);
   const { email, password } = req.body;
   if (!email) {
     error.push("Vui lòng cung cấp email");

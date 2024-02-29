@@ -20,11 +20,11 @@ const Register = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    image: "",
+    image: "defaultAvatar.jpg",
     birthday: "",
   });
 
-  const [loadImage, setLoadImage] = useState("");
+  const [loadImage, setLoadImage] = useState("/image/defaultAvatar.jpg");
   const [gender, setGender] = useState("male");
 
   // inputHandle
