@@ -78,6 +78,8 @@
       .message-text {
         text-align: start;
         border-radius: 10px;
+        background-color: var(--fd-message-bg);
+        color: black;
         img {
           width: 220px;
           height: 270px;
@@ -110,7 +112,7 @@
   .time {
     padding: 5px 0px;
     color: #727272d9;
-    font-size: 12px;
+    font-size: 10px;
   }
 }
 .typing-message {
