@@ -10,9 +10,13 @@ const messageSchema = new Schema(
       type: String,
       required: true,
     },
+    senderAvatar: {
+      type: String,
+      required: false,
+    },
     receiverId: {
       type: String,
-      required: true,
+      required: false,
     },
     message: {
       text: {
@@ -24,6 +28,7 @@ const messageSchema = new Schema(
         default: "",
       },
     },
+    groupId: { type: Schema.Types.ObjectId, ref: "group", required: false },
     status: {
       type: String,
       default: "unseen",

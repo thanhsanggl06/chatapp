@@ -30,6 +30,7 @@ const registerSchema = new Schema(
     friends: {
       type: [
         {
+          _id: false,
           friendId: { type: Schema.Types.ObjectId, ref: "user" },
           status: { type: String, enum: ["pending", "accepted"], default: "pending" },
         },

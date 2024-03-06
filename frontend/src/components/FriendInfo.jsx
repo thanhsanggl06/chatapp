@@ -13,7 +13,7 @@ const FriendInfo = (props) => {
         <div className="active-user">Đang hoạt động</div>
 
         <div className="name">
-          <h4>{currentFriend.username}</h4>
+          <h4>{currentFriend.username ? currentFriend.username : currentFriend.name}</h4>
         </div>
       </div>
 
@@ -27,6 +27,7 @@ const FriendInfo = (props) => {
           <h3>Quyền riêng tư </h3>
           <FaCaretSquareDown />
         </div>
+        {currentFriend.name ? <h3>Members</h3> : ""}
 
         <div className="media">
           <h3>File đã chia sẽ </h3>

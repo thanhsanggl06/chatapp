@@ -1,7 +1,7 @@
 import React from "react";
 import { FaPlusCircle, FaFileImage, FaGift, FaPaperPlane } from "react-icons/fa";
 
-const MessageSend = ({ inputHandle, newMessage, sendMessage }) => {
+const MessageSend = ({ inputHandle, newMessage, sendMessage, emojiSend, imageSend }) => {
   const emojis = ["😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "😝", "😜", "🧐", "🤓", "😎", "😕", "🤑", "🥴", "😱"];
 
   return (
@@ -14,6 +14,7 @@ const MessageSend = ({ inputHandle, newMessage, sendMessage }) => {
 
       <div className="file hover-image">
         <div className="add-image">Add Image</div>
+        <input onChange={imageSend} type="file" id="pic" className="form-control" />
         <label htmlFor="pic">
           {" "}
           <FaFileImage />{" "}
@@ -29,7 +30,7 @@ const MessageSend = ({ inputHandle, newMessage, sendMessage }) => {
         <input type="text" name="message" onChange={inputHandle} id="message" placeholder="Aa" className="form-control" value={newMessage} />
 
         <div className="file hover-gift">
-          <label htmlFor="emoji"> ❤ </label>
+          <label htmlFor="emoji"> ☺️</label>
         </div>
       </div>
 
@@ -40,7 +41,7 @@ const MessageSend = ({ inputHandle, newMessage, sendMessage }) => {
       <div className="emoji-section">
         <div className="emoji">
           {emojis.map((e) => (
-            <span>{e}</span>
+            <span onClick={() => emojiSend(e)}>{e}</span>
           ))}
         </div>
       </div>

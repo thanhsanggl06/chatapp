@@ -1,8 +1,10 @@
-import { FRIEND_GET_SUCCESS, MESSAGE_GET_SUCCESS, MESSAGE_SEND_SUCCESS } from "../types/messengerType";
+import { FRIEND_GET_SUCCESS, GET_MEMBER_SUCCESS, GROUPS_GET_SUCCESS, MESSAGE_GET_SUCCESS, MESSAGE_SEND_SUCCESS } from "../types/messengerType";
 
 const messengerState = {
   friends: [],
   message: [],
+  members: [],
+  groups: [],
 };
 
 export const messengerReducer = (state = messengerState, action) => {
@@ -30,6 +32,18 @@ export const messengerReducer = (state = messengerState, action) => {
     return {
       ...state,
       message: [...state.message, payload.message],
+    };
+  }
+  if (type === GROUPS_GET_SUCCESS) {
+    return {
+      ...state,
+      groups: payload.groups,
+    };
+  }
+  if (type === GET_MEMBER_SUCCESS) {
+    return {
+      ...state,
+      members: payload.members,
     };
   }
   return state;

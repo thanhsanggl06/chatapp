@@ -66,6 +66,9 @@
   .fd-message {
     float: left;
     clear: both; /* Đảm bảo mỗi phần tử bắt đầu trên một dòng mới */
+    .name {
+      margin-left: 40px;
+    }
     .fd-text {
       display: flex;
       align-items: flex-end;
