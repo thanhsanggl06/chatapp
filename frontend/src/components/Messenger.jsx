@@ -5,13 +5,38 @@ import Friends from "./Friends";
 import RightSide from "./RightSide";
 import { useDispatch, useSelector } from "react-redux";
 import { getFriends, messageSend, getMessage, imageMessageSend, getGroups, getMessageGroup, getGroupMembers } from "../store/actions/messengerAction";
+import { io } from "socket.io-client";
 
 const Messenger = () => {
   const dispatch = useDispatch();
   const scrollRef = useRef();
-  // const id = useSelector((state) => state.auth.myInfo.id);
+  const socket = useRef();
+
   const [currentFriend, setCurrentFriend] = useState("");
   const [newMessage, setNewMessage] = useState("");
+  const [activeFriends, setActiveFriends] = useState("");
+  const { myInfo } = useSelector((state) => state.auth);
+  const { friends, message, groups, members } = useSelector((state) => state.messenger);
+
+  useEffect(() => {
+    socket.current = io("ws://localhost:8000");
+  }, []);
+
+  useEffect(() => {
+    socket.current.emit("addUser", myInfo.id, myInfo);
+  }, []);
+
+  useEffect(() => {
+    socket.current.on("getUsers", async (users) => {
+      const friendIds = friends?.map((fd) => fd._id);
+      const friendsActive = users.filter((u) => {
+        return friendIds.includes(u.userId);
+      });
+      setActiveFriends(friendsActive);
+    });
+  }, [friends]);
+
+  // const id = useSelector((state) => state.auth.myInfo.id);
 
   const inputHandle = (e) => {
     setNewMessage(e.target.value);
@@ -62,9 +87,6 @@ const Messenger = () => {
     }
   };
 
-  const { myInfo } = useSelector((state) => state.auth);
-  const { friends, message, groups, members } = useSelector((state) => state.messenger);
-
   useEffect(() => {
     dispatch(getFriends(myInfo.id));
     dispatch(getGroups());
@@ -79,7 +101,7 @@ const Messenger = () => {
   useEffect(() => {
     if (currentFriend.username) {
       dispatch(getMessage(currentFriend?._id));
-    } else {
+    } else if (currentFriend.name) {
       dispatch(getMessageGroup(currentFriend?._id));
       dispatch(getGroupMembers(currentFriend?._id));
     }
@@ -123,9 +145,7 @@ const Messenger = () => {
               </div>
             </div>
 
-            <div className="active-friends">
-              <ActiveFriend />
-            </div>
+            <div className="active-friends">{activeFriends && activeFriends.length > 0 ? <ActiveFriend activeFriends={activeFriends} setCurrentFriend={setCurrentFriend} /> : ""}</div>
             <div className="friends">
               {friends && friends.length > 0
                 ? friends.concat(groups).map((fd) => (
@@ -148,6 +168,7 @@ const Messenger = () => {
             emojiSend={emojiSend}
             imageSend={imageSend}
             members={members}
+            activeFriends={activeFriends}
           />
         ) : (
           ""

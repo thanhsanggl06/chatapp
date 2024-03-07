@@ -5,7 +5,7 @@ import MessageSend from "./MessageSend";
 import FriendInfo from "./FriendInfo";
 
 const RightSide = (props) => {
-  const { currentFriend, newMessage, inputHandle, sendMessage, message, scrollRef, emojiSend, imageSend, members } = props;
+  const { currentFriend, newMessage, inputHandle, sendMessage, message, scrollRef, emojiSend, imageSend, members, activeFriends } = props;
   return (
     <div className="col-9">
       <div className="right-side">
@@ -17,6 +17,7 @@ const RightSide = (props) => {
                 <div className="image-name">
                   <div className="image">
                     <img src={`/image/${currentFriend.image}`} alt="" />
+                    {activeFriends && activeFriends.length > 0 && activeFriends.some((af) => af.userInfo.id === currentFriend._id) ? <div className="active-icon"></div> : ""}
                   </div>
                   <div className="name">
                     <h3> {currentFriend.username ? currentFriend.username : currentFriend.name} </h3>
@@ -45,7 +46,7 @@ const RightSide = (props) => {
           </div>
 
           <div className="col-4">
-            <FriendInfo currentFriend={currentFriend} />
+            <FriendInfo currentFriend={currentFriend} activeFriends={activeFriends} />
           </div>
         </div>
       </div>
