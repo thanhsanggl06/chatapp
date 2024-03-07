@@ -45,12 +45,18 @@ const Messenger = () => {
     if (e.target.files.length !== 0) {
       const imageName = e.target.files[0].name;
       const newImageName = Date.now() + imageName;
-
-      const formData = new FormData();
-      formData.append("senderName", myInfo.senderName);
-      formData.append("imageName", newImageName);
-      formData.append("receiverId", currentFriend._id);
-      formData.append("image", e.target.files[0]);
+      let formData = new FormData();
+      if (currentFriend.username) {
+        formData.append("senderName", myInfo.username);
+        formData.append("imageName", newImageName);
+        formData.append("receiverId", currentFriend._id);
+        formData.append("image", e.target.files[0]);
+      } else {
+        formData.append("senderName", myInfo.username);
+        formData.append("imageName", newImageName);
+        formData.append("groupId", currentFriend._id);
+        formData.append("image", e.target.files[0]);
+      }
 
       dispatch(imageMessageSend(formData));
     }

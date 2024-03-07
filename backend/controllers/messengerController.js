@@ -167,7 +167,7 @@ module.exports.imageMessageSend = async (req, res) => {
 
   form.parse(req, (err, fields, files) => {
     const senderId = req.myId;
-    const { senderName, imageName, receiverId } = fields;
+    const { senderName, imageName, receiverId, groupId } = fields;
     //to do upload image to S3
     const newPath = __dirname + `../../../frontend/public/image/${imageName}`;
     files.image.originalFilename = imageName;
@@ -184,15 +184,29 @@ module.exports.imageMessageSend = async (req, res) => {
         }
         // upload success
         else {
-          const insertMessage = await messageModel.create({
-            senderId: senderId,
-            senderName: senderName,
-            receiverId: receiverId,
-            message: {
-              text: "",
-              image: files.image.originalFilename,
-            },
-          });
+          let newMessage;
+          if (receiverId) {
+            newMessage = {
+              senderId: senderId,
+              senderName: senderName,
+              receiverId: receiverId,
+              message: {
+                text: "",
+                image: files.image.originalFilename,
+              },
+            };
+          } else {
+            newMessage = {
+              senderId: senderId,
+              senderName: senderName,
+              groupId: groupId,
+              message: {
+                text: "",
+                image: files.image.originalFilename,
+              },
+            };
+          }
+          const insertMessage = await messageModel.create(newMessage);
 
           res.status(201).json({
             success: true,

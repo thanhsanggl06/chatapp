@@ -3,7 +3,7 @@ const router = require("express").Router();
 const { getFriends, messageUploadDB, getMessage, imageMessageSend, getGroups, getMessageGroup, getGroupMembers } = require("../controllers/messengerController");
 const { authMiddleware } = require("../middleware/authMiddleware");
 
-router.get("/get-friends/:id", getFriends);
+router.get("/get-friends/:id", authMiddleware, getFriends);
 router.get("/get-groups", authMiddleware, getGroups);
 router.post("/send-message", authMiddleware, messageUploadDB);
 router.get("/get-message/:id", authMiddleware, getMessage);
