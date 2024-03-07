@@ -14,7 +14,7 @@ const MessageSend = ({ inputHandle, newMessage, sendMessage, emojiSend, imageSen
 
       <div className="file hover-image">
         <div className="add-image">Add Image</div>
-        <input onChange={imageSend} type="file" id="pic" className="form-control" />
+        <input onChange={imageSend} type="file" id="pic" className="form-control" accept="image/jpeg, image/png, image/gif" />
         <label htmlFor="pic">
           {" "}
           <FaFileImage />{" "}

@@ -6,21 +6,52 @@ import RightSide from "./RightSide";
 import { useDispatch, useSelector } from "react-redux";
 import { getFriends, messageSend, getMessage, imageMessageSend, getGroups, getMessageGroup, getGroupMembers } from "../store/actions/messengerAction";
 import { io } from "socket.io-client";
+import { useAlert } from "react-alert";
 
 const Messenger = () => {
   const dispatch = useDispatch();
   const scrollRef = useRef();
   const socket = useRef();
+  const alert = useAlert();
 
   const [currentFriend, setCurrentFriend] = useState("");
   const [newMessage, setNewMessage] = useState("");
+  const [socketMessage, setSocketMessage] = useState("");
   const [activeFriends, setActiveFriends] = useState("");
   const { myInfo } = useSelector((state) => state.auth);
   const { friends, message, groups, members } = useSelector((state) => state.messenger);
 
   useEffect(() => {
     socket.current = io("ws://localhost:8000");
+    socket.current.on("getMessage", (data) => {
+      setSocketMessage(data);
+    });
   }, []);
+
+  useEffect(() => {
+    if (socketMessage && socketMessage.groupId) {
+      if (currentFriend._id === socketMessage.groupId && socketMessage.senderId !== myInfo.id) {
+        dispatch({
+          type: "SOCKET_MESSAGE",
+          payload: {
+            message: socketMessage,
+          },
+        });
+      }
+    } else {
+      if (socketMessage && currentFriend) {
+        if (socketMessage.senderId === currentFriend._id && socketMessage.receiverId === myInfo.id) {
+          dispatch({
+            type: "SOCKET_MESSAGE",
+            payload: {
+              message: socketMessage,
+            },
+          });
+        }
+      }
+    }
+    setSocketMessage("");
+  }, [socketMessage]);
 
   useEffect(() => {
     socket.current.emit("addUser", myInfo.id, myInfo);
@@ -45,11 +76,22 @@ const Messenger = () => {
   const sendMessage = (e) => {
     e.preventDefault();
     let data;
+    let datart;
     if (currentFriend.username) {
       data = {
         senderName: myInfo.username,
         receiverId: currentFriend._id,
         message: newMessage ? newMessage : "❤",
+      };
+      datart = {
+        senderId: myInfo.id,
+        senderName: myInfo.username,
+        receiverId: currentFriend._id,
+        time: new Date(),
+        message: {
+          text: newMessage ? newMessage : "❤",
+          image: "",
+        },
       };
     } else {
       data = {
@@ -57,7 +99,22 @@ const Messenger = () => {
         groupId: currentFriend._id,
         message: newMessage ? newMessage : "❤",
       };
+      const memberIds = members.map((mem) => mem.userId._id).filter((id) => id !== myInfo.id);
+      datart = {
+        senderId: myInfo.id,
+        senderName: myInfo.username,
+        groupId: currentFriend._id,
+        memberIds,
+        time: new Date(),
+        message: {
+          text: newMessage ? newMessage : "❤",
+          image: "",
+        },
+      };
     }
+
+    socket.current.emit("sendMessage", datart);
+
     dispatch(messageSend(data));
     setNewMessage("");
   };
@@ -68,22 +125,60 @@ const Messenger = () => {
 
   const imageSend = (e) => {
     if (e.target.files.length !== 0) {
+      // check valid file size
+      const selectedFile = e.target.files[0];
+      if (selectedFile) {
+        const maxSizeInBytes = 2 * 1024 * 1024;
+        if (selectedFile.size > maxSizeInBytes) {
+          alert.error(`Dung lượng tệp tin không được vượt quá 2MB.`);
+          e.target.value = null; // Reset input value
+          return;
+        }
+      }
+
       const imageName = e.target.files[0].name;
       const newImageName = Date.now() + imageName;
       let formData = new FormData();
+      let datart;
       if (currentFriend.username) {
         formData.append("senderName", myInfo.username);
         formData.append("imageName", newImageName);
         formData.append("receiverId", currentFriend._id);
         formData.append("image", e.target.files[0]);
+
+        datart = {
+          senderId: myInfo.id,
+          senderName: myInfo.username,
+          receiverId: currentFriend._id,
+          time: new Date(),
+          message: {
+            text: "",
+            image: newImageName,
+          },
+        };
       } else {
         formData.append("senderName", myInfo.username);
         formData.append("imageName", newImageName);
         formData.append("groupId", currentFriend._id);
         formData.append("image", e.target.files[0]);
+
+        const memberIds = members.map((mem) => mem.userId._id).filter((id) => id !== myInfo.id);
+        datart = {
+          senderId: myInfo.id,
+          senderName: myInfo.username,
+          groupId: currentFriend._id,
+          memberIds,
+          time: new Date(),
+          message: {
+            text: "",
+            image: newImageName,
+          },
+        };
       }
 
-      dispatch(imageMessageSend(formData));
+      dispatch(imageMessageSend(formData)).then(() => {
+        socket.current.emit("sendMessage", datart);
+      });
     }
   };
 
