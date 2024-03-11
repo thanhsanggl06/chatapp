@@ -7,16 +7,27 @@ import { useDispatch, useSelector } from "react-redux";
 import { getFriends, messageSend, getMessage, imageMessageSend, getGroups, getMessageGroup, getGroupMembers } from "../store/actions/messengerAction";
 import { io } from "socket.io-client";
 import { useAlert } from "react-alert";
+import toast, { Toaster } from "react-hot-toast";
+import useSound from "use-sound";
+import notificationSound from "../audio/notification.mp3";
+import sendingSound from "../audio/sending.mp3";
+import Call from "./Call";
 
 const Messenger = () => {
+  const [notificationSPlay] = useSound(notificationSound);
+  const [sendingSPlay] = useSound(sendingSound);
+
   const dispatch = useDispatch();
   const scrollRef = useRef();
   const socket = useRef();
   const alert = useAlert();
 
+  const [isModalOpen, setModalOpen] = useState(false);
+
   const [currentFriend, setCurrentFriend] = useState("");
   const [newMessage, setNewMessage] = useState("");
   const [socketMessage, setSocketMessage] = useState("");
+  const [typingMessage, setTypingMessage] = useState("");
   const [activeFriends, setActiveFriends] = useState("");
   const { myInfo } = useSelector((state) => state.auth);
   const { friends, message, groups, members } = useSelector((state) => state.messenger);
@@ -25,6 +36,9 @@ const Messenger = () => {
     socket.current = io("ws://localhost:8000");
     socket.current.on("getMessage", (data) => {
       setSocketMessage(data);
+    });
+    socket.current.on("typingMessageGet", (data) => {
+      setTypingMessage(data);
     });
   }, []);
 
@@ -54,6 +68,13 @@ const Messenger = () => {
   }, [socketMessage]);
 
   useEffect(() => {
+    if (socketMessage && socketMessage.senderId !== currentFriend._id && socketMessage.receiverId === myInfo.id) {
+      notificationSPlay();
+      toast.success(`${socketMessage.senderName} vừa gửi tin nhắn mới.`);
+    }
+  }, [socketMessage]);
+
+  useEffect(() => {
     socket.current.emit("addUser", myInfo.id, myInfo);
   }, []);
 
@@ -71,6 +92,12 @@ const Messenger = () => {
 
   const inputHandle = (e) => {
     setNewMessage(e.target.value);
+
+    socket.current.emit("typingMessage", {
+      senderId: myInfo.id,
+      receiverId: currentFriend._id,
+      msg: e.target.value,
+    });
   };
 
   const sendMessage = (e) => {
@@ -114,13 +141,22 @@ const Messenger = () => {
     }
 
     socket.current.emit("sendMessage", datart);
-
+    socket.current.emit("typingMessage", {
+      senderId: myInfo.id,
+      receiverId: currentFriend._id,
+      msg: "",
+    });
     dispatch(messageSend(data));
     setNewMessage("");
   };
 
   const emojiSend = (e) => {
     setNewMessage(`${newMessage}` + e);
+    socket.current.emit("typingMessage", {
+      senderId: myInfo.id,
+      receiverId: currentFriend._id,
+      msg: `${newMessage}` + e,
+    });
   };
 
   const imageSend = (e) => {
@@ -135,7 +171,6 @@ const Messenger = () => {
           return;
         }
       }
-
       const imageName = e.target.files[0].name;
       const newImageName = Date.now() + imageName;
       let formData = new FormData();
@@ -206,8 +241,26 @@ const Messenger = () => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [message]);
 
+  const handleCallVideo = () => {
+    setModalOpen(true);
+    // Thêm logic xử lý khi ấn nút call video ở đây
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
   return (
     <div className="messenger">
+      <Toaster
+        position={"top-right"}
+        reverseOrder={false}
+        toastOptions={{
+          style: {
+            fontSize: "18px",
+          },
+        }}
+      />
       <div className="row">
         <div className="col-3">
           <div className="left-side">
@@ -264,11 +317,14 @@ const Messenger = () => {
             imageSend={imageSend}
             members={members}
             activeFriends={activeFriends}
+            handleCallVideo={handleCallVideo}
+            typingMessage={typingMessage}
           />
         ) : (
           ""
         )}
       </div>
+      <Call isOpen={isModalOpen} onClose={handleCloseModal}></Call>
     </div>
   );
 };

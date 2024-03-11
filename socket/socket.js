@@ -22,14 +22,13 @@ const findFriend = (id) => {
 };
 
 io.on("connection", (socket) => {
-  console.log("Socket is connecting...");
+  // console.log("Socket is connecting...");
   socket.on("addUser", (userId, userInfo) => {
     addUser(userId, socket.id, userInfo);
     io.emit("getUsers", users);
   });
   socket.on("sendMessage", (data) => {
     if (data.groupId) {
-      console.log(data.memberIds);
       const membersActive = users.filter((u) => {
         return data.memberIds.includes(u.userId);
       });
@@ -65,8 +64,30 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("typingMessage", (data) => {
+    const user = findFriend(data.receiverId);
+    if (user !== undefined) {
+      socket.to(user.socketId).emit("typingMessageGet", {
+        senderId: data.senderId,
+        receiverId: data.receiverId,
+        message: data.msg,
+      });
+    }
+  });
+
+  socket.on("callUser", (data) => {
+    const user = findFriend(data.userToCall);
+    if (user !== undefined) {
+      io.to(user.socketId).emit("callUser", { signal: data.signalData, from: data.from, name: data.name });
+    }
+  });
+
+  socket.on("answerCall", (data) => {
+    io.to(data.to).emit("callAccepted", data.signal);
+  });
+
   socket.on("disconnect", () => {
-    console.log("user disconnect");
+    // console.log("user disconnect");
     removeUser(socket.id);
     io.emit("getUsers", users);
   });

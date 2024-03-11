@@ -5,7 +5,7 @@ import MessageSend from "./MessageSend";
 import FriendInfo from "./FriendInfo";
 
 const RightSide = (props) => {
-  const { currentFriend, newMessage, inputHandle, sendMessage, message, scrollRef, emojiSend, imageSend, members, activeFriends } = props;
+  const { currentFriend, newMessage, inputHandle, sendMessage, message, scrollRef, emojiSend, imageSend, members, activeFriends, handleCallVideo, typingMessage } = props;
   return (
     <div className="col-9">
       <div className="right-side">
@@ -29,7 +29,7 @@ const RightSide = (props) => {
                     <FaPhoneAlt />
                   </div>
 
-                  <div className="icon">
+                  <div className="icon" onClick={handleCallVideo}>
                     <FaVideo />
                   </div>
 
@@ -40,7 +40,7 @@ const RightSide = (props) => {
                   </div>
                 </div>
               </div>
-              <Message message={message} currentFriend={currentFriend} scrollRef={scrollRef} members={members} />
+              <Message message={message} currentFriend={currentFriend} scrollRef={scrollRef} members={members} typingMessage={typingMessage} />
               <MessageSend newMessage={newMessage} inputHandle={inputHandle} sendMessage={sendMessage} emojiSend={emojiSend} imageSend={imageSend} />
             </div>
           </div>
