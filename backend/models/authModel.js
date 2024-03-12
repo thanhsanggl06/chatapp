@@ -57,7 +57,7 @@ registerSchema.methods.getFriendsList = async function () {
 
     const friendsList = await this.model("user")
       .find({ _id: { $in: friendIds } })
-      .select("username image email");
+      .select("_id username image email");
     const acceptedFriends = this.friends.filter((friend) => friend.status === "accepted");
 
     const finalList = acceptedFriends.map((friend) => {

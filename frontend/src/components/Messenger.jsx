@@ -10,12 +10,10 @@ import { useAlert } from "react-alert";
 import toast, { Toaster } from "react-hot-toast";
 import useSound from "use-sound";
 import notificationSound from "../audio/notification.mp3";
-import sendingSound from "../audio/sending.mp3";
 import Call from "./Call";
 
 const Messenger = () => {
   const [notificationSPlay] = useSound(notificationSound);
-  const [sendingSPlay] = useSound(sendingSound);
 
   const dispatch = useDispatch();
   const scrollRef = useRef();
@@ -30,7 +28,7 @@ const Messenger = () => {
   const [typingMessage, setTypingMessage] = useState("");
   const [activeFriends, setActiveFriends] = useState("");
   const { myInfo } = useSelector((state) => state.auth);
-  const { friends, message, groups, members } = useSelector((state) => state.messenger);
+  const { friends, message, members } = useSelector((state) => state.messenger);
 
   useEffect(() => {
     socket.current = io("ws://localhost:8000");
@@ -41,6 +39,13 @@ const Messenger = () => {
       setTypingMessage(data);
     });
   }, []);
+
+  const moveFriendToTop = (indexToMoveUp) => {
+    if (indexToMoveUp !== -1 && indexToMoveUp !== 0) {
+      const removedElement = friends.splice(indexToMoveUp, 1);
+      friends.unshift(...removedElement);
+    }
+  };
 
   useEffect(() => {
     if (socketMessage && socketMessage.groupId) {
@@ -68,10 +73,26 @@ const Messenger = () => {
   }, [socketMessage]);
 
   useEffect(() => {
+    let indexToMoveUp = -1;
     if (socketMessage && socketMessage.senderId !== currentFriend._id && socketMessage.receiverId === myInfo.id) {
       notificationSPlay();
       toast.success(`${socketMessage.senderName} vừa gửi tin nhắn mới.`);
+    } else if (socketMessage.groupId && socketMessage.groupId !== currentFriend._id) {
+      notificationSPlay();
+      toast.success(`Bạn có tin nhắn mới`);
     }
+    if (socketMessage && socketMessage.groupId) {
+      indexToMoveUp = friends.findIndex((fd) => fd.fndInfo._id === socketMessage.groupId);
+    } else if (socketMessage && socketMessage.senderId) {
+      indexToMoveUp = friends.findIndex((fd) => fd.fndInfo._id === socketMessage.senderId);
+    }
+    moveFriendToTop(indexToMoveUp);
+    dispatch({
+      type: "SOCKET_MESSAGE_NEW",
+      payload: {
+        friends: friends,
+      },
+    });
   }, [socketMessage]);
 
   useEffect(() => {
@@ -80,7 +101,7 @@ const Messenger = () => {
 
   useEffect(() => {
     socket.current.on("getUsers", async (users) => {
-      const friendIds = friends?.map((fd) => fd._id);
+      const friendIds = friends?.map((fd) => fd.fndInfo._id);
       const friendsActive = users.filter((u) => {
         return friendIds.includes(u.userId);
       });
@@ -139,6 +160,15 @@ const Messenger = () => {
         },
       };
     }
+
+    const indexToMoveUp = friends.findIndex((fd) => fd.fndInfo._id === currentFriend._id);
+    moveFriendToTop(indexToMoveUp);
+    dispatch({
+      type: "SOCKET_MESSAGE_NEW",
+      payload: {
+        friends: friends,
+      },
+    });
 
     socket.current.emit("sendMessage", datart);
     socket.current.emit("typingMessage", {
@@ -210,6 +240,14 @@ const Messenger = () => {
           },
         };
       }
+      const indexToMoveUp = friends.findIndex((fd) => fd.fndInfo._id === currentFriend._id);
+      moveFriendToTop(indexToMoveUp);
+      dispatch({
+        type: "SOCKET_MESSAGE_NEW",
+        payload: {
+          friends: friends,
+        },
+      });
 
       dispatch(imageMessageSend(formData)).then(() => {
         socket.current.emit("sendMessage", datart);
@@ -224,7 +262,7 @@ const Messenger = () => {
 
   useEffect(() => {
     if (friends && friends.length > 0) {
-      setCurrentFriend(friends[0]);
+      setCurrentFriend(friends[0].fndInfo);
     }
   }, [friends]);
 
@@ -296,9 +334,9 @@ const Messenger = () => {
             <div className="active-friends">{activeFriends && activeFriends.length > 0 ? <ActiveFriend activeFriends={activeFriends} setCurrentFriend={setCurrentFriend} /> : ""}</div>
             <div className="friends">
               {friends && friends.length > 0
-                ? friends.concat(groups).map((fd) => (
-                    <div className={currentFriend?._id === fd?._id ? "hover-friend active" : "hover-friend"} onClick={() => setCurrentFriend(fd)}>
-                      <Friends friend={fd} />
+                ? friends.map((fd) => (
+                    <div className={currentFriend?._id === fd?.fndInfo._id ? "hover-friend active" : "hover-friend"} onClick={() => setCurrentFriend(fd.fndInfo)}>
+                      <Friends myInfo={myInfo} friend={fd} />
                     </div>
                   ))
                 : "No friend"}

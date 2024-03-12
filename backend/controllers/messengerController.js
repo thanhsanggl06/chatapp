@@ -4,16 +4,72 @@ const messageModel = require("../models/messageModel");
 const formidable = require("formidable");
 const fs = require("fs");
 
+const getLastMessage = async (myId, fdId) => {
+  const msg = await messageModel
+    .findOne({
+      $or: [
+        {
+          $and: [
+            {
+              senderId: {
+                $eq: myId,
+              },
+            },
+            {
+              receiverId: {
+                $eq: fdId,
+              },
+            },
+          ],
+        },
+        {
+          $and: [
+            {
+              senderId: {
+                $eq: fdId,
+              },
+            },
+            {
+              receiverId: {
+                $eq: myId,
+              },
+            },
+          ],
+        },
+        {
+          groupId: {
+            $eq: fdId,
+          },
+        },
+      ],
+    })
+    .sort({
+      updatedAt: -1,
+    });
+  return msg;
+};
+
 module.exports.getFriends = async (req, res) => {
   try {
     const { id } = req.params;
+    let fnd_msg = [];
     const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
     const friendsList = await user.getFriendsList();
-    res.status(200).json({ success: true, friends: friendsList });
+    for (let i = 0; i < friendsList.length; i++) {
+      let lmsg = await getLastMessage(id, friendsList[i]._id.toString());
+      fnd_msg = [
+        ...fnd_msg,
+        {
+          fndInfo: friendsList[i],
+          msgInfo: lmsg,
+        },
+      ];
+    }
+    res.status(200).json({ success: true, friends: fnd_msg });
   } catch (error) {
     res.status(500).json({
       error: {
@@ -27,7 +83,18 @@ module.exports.getGroups = async (req, res) => {
   try {
     const userId = req.myId;
     const groups = await group.find({ "members.userId": userId }).exec();
-    res.status(200).json({ success: true, groups });
+    let grp_msg = [];
+    for (let i = 0; i < groups.length; i++) {
+      let lmsg = await getLastMessage(userId, groups[i]._id.toString());
+      grp_msg = [
+        ...grp_msg,
+        {
+          fndInfo: groups[i],
+          msgInfo: lmsg,
+        },
+      ];
+    }
+    res.status(200).json({ success: true, groups: grp_msg });
   } catch (error) {
     res.status(500).json({
       error: {
@@ -110,27 +177,38 @@ module.exports.getMessage = async (req, res) => {
   const myId = req.myId; // myId from middleware
   const fdId = req.params.id;
   try {
-    let getAllMessage = await messageModel.find({});
-    getAllMessage = getAllMessage.filter((m) => (m.senderId === myId && m.receiverId === fdId) || (m.senderId === fdId && m.receiverId === myId));
-    res.status(200).json({
-      success: true,
-      message: getAllMessage,
+    let getAllMessage = await messageModel.find({
+      $or: [
+        {
+          $and: [
+            {
+              senderId: {
+                $eq: myId,
+              },
+            },
+            {
+              receiverId: {
+                $eq: fdId,
+              },
+            },
+          ],
+        },
+        {
+          $and: [
+            {
+              senderId: {
+                $eq: fdId,
+              },
+            },
+            {
+              receiverId: {
+                $eq: myId,
+              },
+            },
+          ],
+        },
+      ],
     });
-  } catch (error) {
-    res.status(500).json({
-      error: {
-        errorMessage: "Internal Server Error",
-      },
-    });
-  }
-};
-
-module.exports.getMessage = async (req, res) => {
-  const myId = req.myId; // myId from middleware
-  const fdId = req.params.id;
-  try {
-    let getAllMessage = await messageModel.find({});
-    getAllMessage = getAllMessage.filter((m) => (m.senderId === myId && m.receiverId === fdId) || (m.senderId === fdId && m.receiverId === myId));
     res.status(200).json({
       success: true,
       message: getAllMessage,
@@ -147,8 +225,8 @@ module.exports.getMessage = async (req, res) => {
 module.exports.getMessageGroup = async (req, res) => {
   const groupId = req.params.id;
   try {
-    let getAllMessage = await messageModel.find({});
-    getAllMessage = getAllMessage.filter((m) => m.groupId == groupId); //so sanh tuong doi
+    let getAllMessage = await messageModel.find({ groupId: { $eq: groupId } });
+    // getAllMessage = getAllMessage.filter((m) => m.groupId == groupId); //so sanh tuong doi
     res.status(200).json({
       success: true,
       message: getAllMessage,

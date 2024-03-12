@@ -1,18 +1,38 @@
 import React from "react";
+import moment from "moment";
+import "moment/locale/vi";
 
-const Friends = ({ friend }) => {
+const Friends = (props) => {
+  const { fndInfo, msgInfo } = props.friend;
+  const { id } = props.myInfo;
   return (
     <div className="friend">
       <div className="friend-image">
         <div className="image">
-          <img src={`/image/${friend?.image}`} alt="" />
+          <img src={`/image/${fndInfo.image}`} alt="" />
         </div>
       </div>
 
       <div className="friend-name-seen">
         <div className="friend-name">
-          <h4>{friend?.username ? friend?.username : friend?.name}</h4>
+          <h4>{fndInfo?.username ? fndInfo?.username : fndInfo?.name}</h4>
+          <div className="msg-time">
+            {msgInfo && msgInfo.senderId === id ? <span>Bạn :</span> : <span></span>}
+            {msgInfo && msgInfo.message.text ? <span>{msgInfo.message.text.slice(0, 10) + "..."}</span> : <span>Đã gửi 1 file</span>}
+            <span>{msgInfo ? moment(msgInfo.createdAt).startOf("mini").fromNow() : ""}</span>
+          </div>
         </div>
+        {id === msgInfo?.senderId && fndInfo.username ? (
+          <div className="seen-unseen-icon">
+            <img src={`./image/${fndInfo.image}`} alt="" />
+          </div>
+        ) : id !== msgInfo?.senderId ? (
+          <div className="seen-unseen-icon">
+            <div className="seen-icon"></div>
+          </div>
+        ) : (
+          ""
+        )}
       </div>
     </div>
   );
