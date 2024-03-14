@@ -61,6 +61,9 @@ module.exports.getFriends = async (req, res) => {
     const friendsList = await user.getFriendsList();
     for (let i = 0; i < friendsList.length; i++) {
       let lmsg = await getLastMessage(id, friendsList[i]._id.toString());
+      if (!lmsg) {
+        lmsg = { createdAt: friendsList[i].createdAt };
+      }
       fnd_msg = [
         ...fnd_msg,
         {
@@ -86,6 +89,9 @@ module.exports.getGroups = async (req, res) => {
     let grp_msg = [];
     for (let i = 0; i < groups.length; i++) {
       let lmsg = await getLastMessage(userId, groups[i]._id.toString());
+      if (!lmsg) {
+        lmsg = { createdAt: groups[i].createdAt };
+      }
       grp_msg = [
         ...grp_msg,
         {
@@ -300,4 +306,24 @@ module.exports.imageMessageSend = async (req, res) => {
       });
     }
   });
+};
+
+module.exports.seenMessage = async (req, res) => {
+  const messageId = req.body._id;
+  await messageModel
+    .findByIdAndUpdate(messageId, {
+      status: "seen",
+    })
+    .then(() => {
+      res.status(200).json({
+        success: true,
+      });
+    })
+    .catch(() => {
+      res.status(500).json({
+        error: {
+          errorMessage: "Internal Server Error",
+        },
+      });
+    });
 };

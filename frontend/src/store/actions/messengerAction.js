@@ -4,7 +4,6 @@ import { FRIEND_GET_SUCCESS, GET_MEMBER_SUCCESS, GROUPS_GET_SUCCESS, MESSAGE_GET
 export const getFriends = (id) => async (dispatch) => {
   try {
     const response = await axios.get(`/api/get-friends/${id}`);
-    // console.log(response.data);
     dispatch({
       type: FRIEND_GET_SUCCESS,
       payload: {
@@ -101,5 +100,13 @@ export const imageMessageSend = (data) => async (dispatch) => {
     });
   } catch (error) {
     console.log(error.response.data);
+  }
+};
+
+export const seenMessage = (msg) => async (dispatch) => {
+  try {
+    const response = await axios.post(`/api/seen-message`, msg);
+  } catch (error) {
+    console.log(error.response.message);
   }
 };

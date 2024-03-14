@@ -1,10 +1,23 @@
-import { FRIEND_GET_SUCCESS, GET_MEMBER_SUCCESS, GROUPS_GET_SUCCESS, MESSAGE_GET_SUCCESS, MESSAGE_SEND_SUCCESS, SOCKET_MESSAGE, SOCKET_MESSAGE_NEW } from "../types/messengerType";
+import {
+  FRIEND_GET_SUCCESS,
+  GET_MEMBER_SUCCESS,
+  GROUPS_GET_SUCCESS,
+  MESSAGE_GET_SUCCESS,
+  MESSAGE_GET_SUCCESS_CLEAR,
+  MESSAGE_SEND_SUCCESS,
+  SEEN_MESSAGE,
+  SOCKET_MESSAGE,
+  SOCKET_MESSAGE_NEW,
+  UPDATE,
+} from "../types/messengerType";
 
 const messengerState = {
   friends: [],
   message: [],
   members: [],
   groups: [],
+  messageSendSuccess: false,
+  messageGetSuccess: false,
 };
 
 export const messengerReducer = (state = messengerState, action) => {
@@ -20,18 +33,14 @@ export const messengerReducer = (state = messengerState, action) => {
     return {
       ...state,
       message: payload.message,
-    };
-  }
-  if (type === MESSAGE_GET_SUCCESS) {
-    return {
-      ...state,
-      message: payload.message,
+      messageGetSuccess: true,
     };
   }
   if (type === MESSAGE_SEND_SUCCESS) {
     return {
       ...state,
       message: [...state.message, payload.message],
+      messageSendSuccess: true,
     };
   }
   if (type === GROUPS_GET_SUCCESS) {
@@ -58,7 +67,27 @@ export const messengerReducer = (state = messengerState, action) => {
     return {
       ...state,
       friends: payload.friends,
+      messageSendSuccess: false,
     };
+  }
+
+  if (type === SEEN_MESSAGE) {
+    const index = state.friends.findIndex((f) => f.fndInfo._id === payload.msgInfo.receiverId || f.fndInfo._id === payload.msgInfo.groupId);
+    state.friends[index].msgInfo.status = "seen";
+    return { ...state };
+  }
+
+  if (type === UPDATE) {
+    const index = state.friends.findIndex((f) => f.fndInfo._id === payload.id);
+
+    if (state.friends[index].msgInfo.status) {
+      state.friends[index].msgInfo.status = "seen";
+    }
+    return { ...state };
+  }
+
+  if (type === MESSAGE_GET_SUCCESS_CLEAR) {
+    return { ...state, messageGetSuccess: false };
   }
   return state;
 };

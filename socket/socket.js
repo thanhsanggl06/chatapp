@@ -35,31 +35,13 @@ io.on("connection", (socket) => {
       //   console.log(membersActive);
       if (membersActive && membersActive.length > 0) {
         membersActive.map((ma) => {
-          socket.to(ma.socketId).emit("getMessage", {
-            senderId: data.senderId,
-            senderName: data.senderName,
-            groupId: data.groupId,
-            createAt: data.time,
-            message: {
-              text: data.message.text,
-              image: data.message.image,
-            },
-          });
+          socket.to(ma.socketId).emit("getMessage", data);
         });
       }
     } else {
       const user = findFriend(data.receiverId);
       if (user !== undefined) {
-        socket.to(user.socketId).emit("getMessage", {
-          senderId: data.senderId,
-          senderName: data.senderName,
-          receiverId: data.receiverId,
-          createAt: data.time,
-          message: {
-            text: data.message.text,
-            image: data.message.image,
-          },
-        });
+        socket.to(user.socketId).emit("getMessage", data);
       }
     }
   });
@@ -72,6 +54,13 @@ io.on("connection", (socket) => {
         receiverId: data.receiverId,
         message: data.msg,
       });
+    }
+  });
+
+  socket.on("messageSeen", (msg) => {
+    const user = findFriend(msg.senderId);
+    if (user !== undefined) {
+      socket.to(user.socketId).emit("msgSeenResponse", msg); 
     }
   });
 

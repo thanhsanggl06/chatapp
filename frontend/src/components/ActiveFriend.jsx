@@ -7,6 +7,7 @@ const ActiveFriend = ({ activeFriends, setCurrentFriend }) => {
         {activeFriends && activeFriends.length > 0
           ? activeFriends.map((af) => (
               <div
+                key={af.userInfo.id}
                 className="image"
                 onClick={() =>
                   setCurrentFriend({

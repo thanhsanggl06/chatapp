@@ -4,7 +4,7 @@ import ActiveFriend from "./ActiveFriend";
 import Friends from "./Friends";
 import RightSide from "./RightSide";
 import { useDispatch, useSelector } from "react-redux";
-import { getFriends, messageSend, getMessage, imageMessageSend, getGroups, getMessageGroup, getGroupMembers } from "../store/actions/messengerAction";
+import { getFriends, messageSend, getMessage, imageMessageSend, getGroups, getMessageGroup, getGroupMembers, seenMessage } from "../store/actions/messengerAction";
 import { io } from "socket.io-client";
 import { useAlert } from "react-alert";
 import toast, { Toaster } from "react-hot-toast";
@@ -28,7 +28,7 @@ const Messenger = () => {
   const [typingMessage, setTypingMessage] = useState("");
   const [activeFriends, setActiveFriends] = useState("");
   const { myInfo } = useSelector((state) => state.auth);
-  const { friends, message, members } = useSelector((state) => state.messenger);
+  const { friends, message, members, messageSendSuccess, messageGetSuccess } = useSelector((state) => state.messenger);
 
   useEffect(() => {
     socket.current = io("ws://localhost:8000");
@@ -37,6 +37,15 @@ const Messenger = () => {
     });
     socket.current.on("typingMessageGet", (data) => {
       setTypingMessage(data);
+    });
+
+    socket.current.on("msgSeenResponse", (msg) => {
+      dispatch({
+        type: "SEEN_MESSAGE",
+        payload: {
+          msgInfo: msg,
+        },
+      });
     });
   }, []);
 
@@ -66,10 +75,12 @@ const Messenger = () => {
               message: socketMessage,
             },
           });
+
+          dispatch(seenMessage(socketMessage));
+          socket.current.emit("messageSeen", socketMessage);
         }
       }
     }
-    setSocketMessage("");
   }, [socketMessage]);
 
   useEffect(() => {
@@ -87,12 +98,14 @@ const Messenger = () => {
       indexToMoveUp = friends.findIndex((fd) => fd.fndInfo._id === socketMessage.senderId);
     }
     moveFriendToTop(indexToMoveUp);
+    if (socketMessage && friends.length > 0) friends[0].msgInfo = socketMessage;
     dispatch({
       type: "SOCKET_MESSAGE_NEW",
       payload: {
         friends: friends,
       },
     });
+    setSocketMessage("");
   }, [socketMessage]);
 
   useEffect(() => {
@@ -124,22 +137,11 @@ const Messenger = () => {
   const sendMessage = (e) => {
     e.preventDefault();
     let data;
-    let datart;
     if (currentFriend.username) {
       data = {
         senderName: myInfo.username,
         receiverId: currentFriend._id,
         message: newMessage ? newMessage : "❤",
-      };
-      datart = {
-        senderId: myInfo.id,
-        senderName: myInfo.username,
-        receiverId: currentFriend._id,
-        time: new Date(),
-        message: {
-          text: newMessage ? newMessage : "❤",
-          image: "",
-        },
       };
     } else {
       data = {
@@ -147,30 +149,9 @@ const Messenger = () => {
         groupId: currentFriend._id,
         message: newMessage ? newMessage : "❤",
       };
-      const memberIds = members.map((mem) => mem.userId._id).filter((id) => id !== myInfo.id);
-      datart = {
-        senderId: myInfo.id,
-        senderName: myInfo.username,
-        groupId: currentFriend._id,
-        memberIds,
-        time: new Date(),
-        message: {
-          text: newMessage ? newMessage : "❤",
-          image: "",
-        },
-      };
     }
 
-    const indexToMoveUp = friends.findIndex((fd) => fd.fndInfo._id === currentFriend._id);
-    moveFriendToTop(indexToMoveUp);
-    dispatch({
-      type: "SOCKET_MESSAGE_NEW",
-      payload: {
-        friends: friends,
-      },
-    });
-
-    socket.current.emit("sendMessage", datart);
+    // socket.current.emit("sendMessage", datart);
     socket.current.emit("typingMessage", {
       senderId: myInfo.id,
       receiverId: currentFriend._id,
@@ -204,56 +185,43 @@ const Messenger = () => {
       const imageName = e.target.files[0].name;
       const newImageName = Date.now() + imageName;
       let formData = new FormData();
-      let datart;
       if (currentFriend.username) {
         formData.append("senderName", myInfo.username);
         formData.append("imageName", newImageName);
         formData.append("receiverId", currentFriend._id);
         formData.append("image", e.target.files[0]);
-
-        datart = {
-          senderId: myInfo.id,
-          senderName: myInfo.username,
-          receiverId: currentFriend._id,
-          time: new Date(),
-          message: {
-            text: "",
-            image: newImageName,
-          },
-        };
       } else {
         formData.append("senderName", myInfo.username);
         formData.append("imageName", newImageName);
         formData.append("groupId", currentFriend._id);
         formData.append("image", e.target.files[0]);
+      }
+      dispatch(imageMessageSend(formData));
+    }
+  };
 
+  useEffect(() => {
+    if (messageSendSuccess) {
+      let data = message[message.length - 1];
+      if (currentFriend.name) {
         const memberIds = members.map((mem) => mem.userId._id).filter((id) => id !== myInfo.id);
-        datart = {
-          senderId: myInfo.id,
-          senderName: myInfo.username,
-          groupId: currentFriend._id,
+        data = {
+          ...data,
           memberIds,
-          time: new Date(),
-          message: {
-            text: "",
-            image: newImageName,
-          },
         };
       }
+      socket.current.emit("sendMessage", data);
       const indexToMoveUp = friends.findIndex((fd) => fd.fndInfo._id === currentFriend._id);
       moveFriendToTop(indexToMoveUp);
+      friends[0].msgInfo = message[message.length - 1];
       dispatch({
         type: "SOCKET_MESSAGE_NEW",
         payload: {
           friends: friends,
         },
       });
-
-      dispatch(imageMessageSend(formData)).then(() => {
-        socket.current.emit("sendMessage", datart);
-      });
     }
-  };
+  }, [messageSendSuccess]);
 
   useEffect(() => {
     dispatch(getFriends(myInfo.id));
@@ -265,6 +233,20 @@ const Messenger = () => {
       setCurrentFriend(friends[0].fndInfo);
     }
   }, [friends]);
+
+  useEffect(() => {
+    if (message.length > 0) {
+      if (message[message.length - 1].senderId !== myInfo.id && message[message.length - 1].status !== "seen") {
+        if (!currentFriend.name) socket.current.emit("messageSeen", message[message.length - 1]);
+        dispatch({
+          type: "UPDATE",
+          payload: { id: currentFriend._id },
+        });
+        dispatch(seenMessage({ _id: message[message.length - 1]._id }));
+      }
+    }
+    dispatch({ type: "MESSAGE_GET_SUCCESS_CLEAR" });
+  }, [messageGetSuccess]);
 
   useEffect(() => {
     if (currentFriend.username) {
@@ -335,7 +317,7 @@ const Messenger = () => {
             <div className="friends">
               {friends && friends.length > 0
                 ? friends.map((fd) => (
-                    <div className={currentFriend?._id === fd?.fndInfo._id ? "hover-friend active" : "hover-friend"} onClick={() => setCurrentFriend(fd.fndInfo)}>
+                    <div key={fd.fndInfo._id} className={currentFriend?._id === fd?.fndInfo._id ? "hover-friend active" : "hover-friend"} onClick={() => setCurrentFriend(fd.fndInfo)}>
                       <Friends myInfo={myInfo} friend={fd} />
                     </div>
                   ))
