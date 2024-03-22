@@ -327,3 +327,127 @@ module.exports.seenMessage = async (req, res) => {
       });
     });
 };
+
+module.exports.searchUser = async (req, res) => {
+  const myId = req.myId;
+
+  const query = req.query.q;
+  try {
+    const users = await User.find(
+      {
+        $and: [
+          { _id: { $ne: myId } }, // Exclude the user with the same ID
+          {
+            $or: [{ username: { $regex: query, $options: "i" } }, { email: { $regex: query, $options: "i" } }],
+          },
+        ],
+      },
+      { username: 1, email: 1, image: 1 }
+    ).limit(5); // Limit to 5 results
+
+    let results = [];
+
+    if (users && users.length > 0) {
+      // Lấy danh sách bạn bè của người dùng hiện tại
+      const currentUser = await User.findById(myId);
+      const friendIds = currentUser.friends.map((friend) => friend.friendId);
+      // // Thêm trường statusFriend vào kết quả tìm kiếm
+      results = users.map((user) => {
+        const friendIndex = friendIds.findIndex((id) => id.equals(user._id));
+        const status = friendIndex !== -1 && currentUser.friends[friendIndex] ? currentUser.friends[friendIndex].status : "none";
+        return {
+          _id: user._id,
+          username: user.username,
+          email: user.email,
+          image: user.image,
+          statusFriend: status,
+        };
+      });
+    }
+
+    res.status(200).json({
+      users: results,
+    });
+  } catch (error) {
+    console.error("Error searching users:", error);
+    res.status(500).json({
+      error: {
+        errorMessage: "Internal Server Error",
+      },
+    });
+  }
+};
+
+module.exports.addFriend = async (req, res) => {
+  try {
+    const myId = req.myId;
+    const { fdId } = req.params;
+    const user = await User.findById(myId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    const idExist = user.friends.findIndex((f) => f.friendId.toString() === fdId);
+    if (idExist !== -1) {
+      return res.status(409).json({ error: "conflict" });
+    }
+
+    const response = await user.addFriend(fdId);
+
+    res.status(200).json({ response });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: {
+        errorMessage: "Internal Server Error",
+      },
+    });
+  }
+};
+
+module.exports.acceptFriendRequest = async (req, res) => {
+  try {
+    const myId = req.myId;
+    const { fdId } = req.params;
+
+    const user = await User.findByIdAndUpdate(
+      myId,
+      {
+        $set: { "friends.$[elem].status": "accepted" },
+      },
+      { arrayFilters: [{ "elem.friendId": fdId }] }
+    );
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    await User.updateOne({ _id: fdId, "friends.friendId": myId }, { $set: { "friends.$.status": "accepted" } });
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: {
+        errorMessage: "Internal Server Error",
+      },
+    });
+  }
+};
+
+module.exports.getRequestAddFriend = async (req, res) => {
+  try {
+    const id = req.myId;
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const friendsList = await user.getRequestAddFriend();
+    res.status(200).json({ success: true, request: friendsList });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: {
+        errorMessage: "Internal Sever Error ",
+      },
+    });
+  }
+};

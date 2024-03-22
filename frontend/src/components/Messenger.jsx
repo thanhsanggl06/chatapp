@@ -1,16 +1,18 @@
 import React, { useEffect, useState, useRef } from "react";
-import { FaEllipsisH, FaEdit, FaSistrix } from "react-icons/fa";
+import { FaEllipsisH, FaEdit, FaSistrix, FaSignOutAlt, FaUserFriends } from "react-icons/fa";
 import ActiveFriend from "./ActiveFriend";
 import Friends from "./Friends";
 import RightSide from "./RightSide";
 import { useDispatch, useSelector } from "react-redux";
-import { getFriends, messageSend, getMessage, imageMessageSend, getGroups, getMessageGroup, getGroupMembers, seenMessage } from "../store/actions/messengerAction";
+import { getFriends, messageSend, getMessage, imageMessageSend, getGroups, getMessageGroup, getGroupMembers, seenMessage, getRequestAddFriends } from "../store/actions/messengerAction";
+import { userLogout } from "../store/actions/authAction";
 import { io } from "socket.io-client";
 import { useAlert } from "react-alert";
 import toast, { Toaster } from "react-hot-toast";
 import useSound from "use-sound";
 import notificationSound from "../audio/notification.mp3";
 import Call from "./Call";
+import axios from "axios";
 
 const Messenger = () => {
   const [notificationSPlay] = useSound(notificationSound);
@@ -21,14 +23,15 @@ const Messenger = () => {
   const alert = useAlert();
 
   const [isModalOpen, setModalOpen] = useState(false);
-
+  const [activeTab, setActiveTab] = useState("tab1");
   const [currentFriend, setCurrentFriend] = useState("");
   const [newMessage, setNewMessage] = useState("");
   const [socketMessage, setSocketMessage] = useState("");
   const [typingMessage, setTypingMessage] = useState("");
   const [activeFriends, setActiveFriends] = useState("");
+  const [searchUsers, setSearchUsers] = useState("");
   const { myInfo } = useSelector((state) => state.auth);
-  const { friends, message, members, messageSendSuccess, messageGetSuccess } = useSelector((state) => state.messenger);
+  const { friends, message, members, messageSendSuccess, messageGetSuccess, requestAddFriend } = useSelector((state) => state.messenger);
 
   useEffect(() => {
     socket.current = io("ws://localhost:8000");
@@ -110,6 +113,7 @@ const Messenger = () => {
 
   useEffect(() => {
     socket.current.emit("addUser", myInfo.id, myInfo);
+    dispatch(getRequestAddFriends());
   }, []);
 
   useEffect(() => {
@@ -258,8 +262,61 @@ const Messenger = () => {
   }, [currentFriend?._id]);
 
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    scrollRef.current?.scrollIntoView({ behavior: "auto" });
   }, [message]);
+
+  const [hide, setHide] = useState(true);
+  const [afHide, setAfHide] = useState(true);
+
+  const logout = () => {
+    dispatch(userLogout());
+    socket.current.emit("logout", myInfo.id);
+  };
+
+  const search = (e) => {
+    const getFriendClass = document.getElementsByClassName("hover-friend");
+    const frienNameClass = document.getElementsByClassName("Fd_name");
+    for (var i = 0; i < getFriendClass.length, i < frienNameClass.length; i++) {
+      let text = frienNameClass[i].innerText.toLowerCase();
+      if (text.indexOf(e.target.value.toLowerCase()) > -1) {
+        getFriendClass[i].style.display = "";
+      } else {
+        getFriendClass[i].style.display = "none";
+      }
+    }
+  };
+
+  const handleSearchUser = async (e) => {
+    if (e.target.value !== "") {
+      const response = await axios.get(`/api/search?q=${e.target.value}`);
+      setSearchUsers(response.data.users);
+      console.log(response.data.users);
+    } else {
+      setSearchUsers([]);
+    }
+  };
+
+  const addFriend = async (fdId) => {
+    try {
+      const response = await axios.post(`/api/add-friend/${fdId}`);
+      console.log(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const acceptRequestFriend = async (fdId) => {
+    try {
+      const response = await axios.post(`/api/accept-friend-request/${fdId}`);
+      console.log(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const changeTab = (tab) => {
+    setActiveTab(tab);
+  };
 
   const handleCallVideo = () => {
     setModalOpen(true);
@@ -296,10 +353,87 @@ const Messenger = () => {
 
               <div className="icons">
                 <div className="icon">
+                  <FaUserFriends onClick={() => setAfHide(!afHide)} />
+                  <div className={afHide ? "search_friend" : "search_friend show"}>
+                    <div className="tab-buttons">
+                      <button className={activeTab === "tab1" ? "active" : ""} onClick={() => changeTab("tab1")}>
+                        Tìm kiếm
+                      </button>
+                      <button className={activeTab === "tab2" ? "active" : ""} onClick={() => changeTab("tab2")}>
+                        Lời mời
+                      </button>
+                    </div>
+
+                    {/* Nội dung của tab */}
+                    <div className="tab-content">
+                      {/* Hiển thị nội dung tương ứng với tab active */}
+                      {activeTab === "tab1" && (
+                        <div>
+                          <div className="search">
+                            <button>
+                              <FaSistrix />
+                            </button>
+                            <input onChange={handleSearchUser} type="text" placeholder="Search" className="form-control" />
+                          </div>
+                          {searchUsers && searchUsers.length > 0 ? (
+                            <div className="search_results">
+                              {searchUsers.map((u) => (
+                                <div className="user">
+                                  <div className="user-info">
+                                    <div className="image">
+                                      <img src={`/image/${u.image}`} alt="img" />
+                                    </div>
+                                    <div className="name">
+                                      <h3>{u.username}</h3>
+                                    </div>
+                                  </div>
+                                  <div className="add-friend">{u.statusFriend === "none" ? <button onClick={() => addFriend(u._id)}>Kết bạn</button> : ""}</div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            ""
+                          )}
+                        </div>
+                      )}
+                      {activeTab === "tab2" && (
+                        <div>
+                          {requestAddFriend && requestAddFriend.length > 0 ? (
+                            <div className="search_results">
+                              {requestAddFriend.map((u) => (
+                                <div className="user">
+                                  <div className="user-info">
+                                    <div className="image">
+                                      <img src={`/image/${u.image}`} alt="img" />
+                                    </div>
+                                    <div className="name">
+                                      <h3>{u.username}</h3>
+                                    </div>
+                                  </div>
+                                  <div className="add-friend">
+                                    <button onClick={() => acceptRequestFriend(u._id)}>Chấp nhận</button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            ""
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div onClick={() => setHide(!hide)} className="icon">
                   <FaEllipsisH />
                 </div>
                 <div className="icon">
                   <FaEdit />
+                </div>
+                <div className={hide ? "theme_logout" : "theme_logout show"}>
+                  <div onClick={logout} className="logout">
+                    <FaSignOutAlt /> Đăng xuất
+                  </div>
                 </div>
               </div>
             </div>
@@ -309,7 +443,7 @@ const Messenger = () => {
                 <button>
                   <FaSistrix />
                 </button>
-                <input type="text" placeholder="Search" className="form-control" />
+                <input onChange={search} type="text" placeholder="Search" className="form-control" />
               </div>
             </div>
 

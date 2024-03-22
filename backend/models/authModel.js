@@ -32,7 +32,7 @@ const registerSchema = new Schema(
         {
           _id: false,
           friendId: { type: Schema.Types.ObjectId, ref: "user" },
-          status: { type: String, enum: ["pending", "accepted"], default: "pending" },
+          status: { type: String, enum: ["pending", "accepted", "request"], default: "pending" },
         },
       ],
       default: [], // Mảng rỗng là giá trị mặc định
@@ -69,6 +69,52 @@ registerSchema.methods.getFriendsList = async function () {
   } catch (error) {
     console.error(error);
     throw new Error("Error getting friends list");
+  }
+};
+
+registerSchema.methods.getRequestAddFriend = async function () {
+  try {
+    const friendIds = this.friends.filter((friend) => friend.status === "pending").map((friend) => friend.friendId);
+
+    const requestFriendsList = await this.model("user")
+      .find({ _id: { $in: friendIds } })
+      .select("_id username image email createdAt");
+
+    return requestFriendsList;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Error getting friends list");
+  }
+};
+
+registerSchema.methods.addFriend = async function (friendId) {
+  try {
+    const senderUserId = this._id; // ID của người gửi
+    const senderFriend = {
+      friendId: friendId,
+      status: "request",
+    };
+
+    // Thêm người bạn với status "request" cho người gửi
+    this.friends.push(senderFriend);
+
+    // Tìm người nhận và thêm người gửi vào danh sách bạn bè của họ với status "pending"
+    const recipientUser = await this.model("user").findById(friendId);
+    if (recipientUser) {
+      const recipientFriend = {
+        friendId: senderUserId,
+        status: "pending",
+      };
+      recipientUser.friends.push(recipientFriend);
+      await recipientUser.save();
+    } else {
+      throw new Error("Recipient user not found.");
+    }
+
+    await this.save();
+    return this;
+  } catch (error) {
+    throw error;
   }
 };
 

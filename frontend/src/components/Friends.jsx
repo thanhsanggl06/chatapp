@@ -16,7 +16,9 @@ const Friends = (props) => {
 
       <div className="friend-name-seen">
         <div className="friend-name">
-          <h4 className={msgInfo.senderId !== id && msgInfo.status !== undefined && msgInfo.status !== "seen" ? "unseen_message" : ""}>{fndInfo?.username ? fndInfo?.username : fndInfo?.name}</h4>
+          <h4 className={msgInfo.senderId !== id && msgInfo.status !== undefined && msgInfo.status !== "seen" ? "unseen_message Fd_name" : "Fd_name"}>
+            {fndInfo?.username ? fndInfo?.username : fndInfo?.name}
+          </h4>
           <div className="msg-time">
             {msgInfo && msgInfo.senderId === id ? <span>Bạn :</span> : <span></span>}
             {msgInfo && msgInfo.message?.text ? (

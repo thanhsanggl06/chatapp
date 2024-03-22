@@ -16,7 +16,7 @@ const Message = ({ message, currentFriend, scrollRef, members, typingMessage }) 
                   <div className="image-message">
                     <div className="my-text">
                       <p className="message-text">
-                        {m.message.text === "" ? <img src={`/image/${m.message.image}`} alt="" /> : m.message.text}
+                        {m.message.text === "" ? <img loading="lazy" src={`/image/${m.message.image}`} alt="" /> : m.message.text}
                         <div className="time">{moment(m.createdAt).format("HH:mm")} </div>
                       </p>
                       {index === message.length - 1 && m.senderId === myInfo.id ? (

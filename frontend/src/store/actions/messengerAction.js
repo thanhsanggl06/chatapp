@@ -1,5 +1,5 @@
 import axios from "axios";
-import { FRIEND_GET_SUCCESS, GET_MEMBER_SUCCESS, GROUPS_GET_SUCCESS, MESSAGE_GET_SUCCESS, MESSAGE_SEND_SUCCESS } from "../types/messengerType";
+import { FRIEND_GET_SUCCESS, GET_MEMBER_SUCCESS, GET_REQUEST_ADD_FRIEND_SUCCESS, GROUPS_GET_SUCCESS, MESSAGE_GET_SUCCESS, MESSAGE_SEND_SUCCESS } from "../types/messengerType";
 
 export const getFriends = (id) => async (dispatch) => {
   try {
@@ -106,6 +106,20 @@ export const imageMessageSend = (data) => async (dispatch) => {
 export const seenMessage = (msg) => async (dispatch) => {
   try {
     const response = await axios.post(`/api/seen-message`, msg);
+  } catch (error) {
+    console.log(error.response.message);
+  }
+};
+
+export const getRequestAddFriends = () => async (dispatch) => {
+  try {
+    const response = await axios.get("/api/get-requestAddFriends");
+    dispatch({
+      type: GET_REQUEST_ADD_FRIEND_SUCCESS,
+      payload: {
+        request: response.data.request,
+      },
+    });
   } catch (error) {
     console.log(error.response.message);
   }

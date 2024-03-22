@@ -1,6 +1,8 @@
+import { LOGOUT_SUCCESS } from "../types/authType";
 import {
   FRIEND_GET_SUCCESS,
   GET_MEMBER_SUCCESS,
+  GET_REQUEST_ADD_FRIEND_SUCCESS,
   GROUPS_GET_SUCCESS,
   MESSAGE_GET_SUCCESS,
   MESSAGE_GET_SUCCESS_CLEAR,
@@ -18,6 +20,7 @@ const messengerState = {
   groups: [],
   messageSendSuccess: false,
   messageGetSuccess: false,
+  requestAddFriend: [],
 };
 
 export const messengerReducer = (state = messengerState, action) => {
@@ -88,6 +91,23 @@ export const messengerReducer = (state = messengerState, action) => {
 
   if (type === MESSAGE_GET_SUCCESS_CLEAR) {
     return { ...state, messageGetSuccess: false };
+  }
+  if (type === GET_REQUEST_ADD_FRIEND_SUCCESS) {
+    return {
+      ...state,
+      requestAddFriend: payload.request,
+    };
+  }
+  if (type === LOGOUT_SUCCESS) {
+    return {
+      friends: [],
+      message: [],
+      members: [],
+      groups: [],
+      requestAddFriend: [],
+      messageSendSuccess: false,
+      messageGetSuccess: false,
+    };
   }
   return state;
 };

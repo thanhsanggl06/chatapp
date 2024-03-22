@@ -21,6 +21,10 @@ const findFriend = (id) => {
   return users.find((u) => u.userId === id);
 };
 
+const userLogout = (userId) => {
+  users = users.filter((u) => u.userId !== userId);
+};
+
 io.on("connection", (socket) => {
   // console.log("Socket is connecting...");
   socket.on("addUser", (userId, userInfo) => {
@@ -60,7 +64,7 @@ io.on("connection", (socket) => {
   socket.on("messageSeen", (msg) => {
     const user = findFriend(msg.senderId);
     if (user !== undefined) {
-      socket.to(user.socketId).emit("msgSeenResponse", msg); 
+      socket.to(user.socketId).emit("msgSeenResponse", msg);
     }
   });
 
@@ -73,6 +77,10 @@ io.on("connection", (socket) => {
 
   socket.on("answerCall", (data) => {
     io.to(data.to).emit("callAccepted", data.signal);
+  });
+
+  socket.on("logout", (userId) => {
+    userLogout(userId);
   });
 
   socket.on("disconnect", () => {
