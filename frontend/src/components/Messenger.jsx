@@ -72,6 +72,7 @@ const Messenger = () => {
     } else {
       if (socketMessage && currentFriend) {
         if (socketMessage.senderId === currentFriend._id && socketMessage.receiverId === myInfo.id) {
+          socketMessage.status = "seen";
           dispatch({
             type: "SOCKET_MESSAGE",
             payload: {
@@ -269,8 +270,8 @@ const Messenger = () => {
   const [afHide, setAfHide] = useState(true);
 
   const logout = () => {
-    dispatch(userLogout());
     socket.current.emit("logout", myInfo.id);
+    dispatch(userLogout());
   };
 
   const search = (e) => {
@@ -353,6 +354,7 @@ const Messenger = () => {
 
               <div className="icons">
                 <div className="icon">
+                  {requestAddFriend && requestAddFriend.length > 0 && <div className="request-add"></div>}
                   <FaUserFriends onClick={() => setAfHide(!afHide)} />
                   <div className={afHide ? "search_friend" : "search_friend show"}>
                     <div className="tab-buttons">
@@ -361,6 +363,7 @@ const Messenger = () => {
                       </button>
                       <button className={activeTab === "tab2" ? "active" : ""} onClick={() => changeTab("tab2")}>
                         Lời mời
+                        {requestAddFriend && requestAddFriend.length > 0 && <div className="request-add"></div>}
                       </button>
                     </div>
 
@@ -387,7 +390,15 @@ const Messenger = () => {
                                       <h3>{u.username}</h3>
                                     </div>
                                   </div>
-                                  <div className="add-friend">{u.statusFriend === "none" ? <button onClick={() => addFriend(u._id)}>Kết bạn</button> : ""}</div>
+                                  <div className="add-friend">
+                                    {u.statusFriend === "none" ? (
+                                      <button onClick={() => addFriend(u._id)}>Kết bạn</button>
+                                    ) : u.statusFriend === "pending" ? (
+                                      <button onClick={() => acceptRequestFriend(u._id)}>Kết bạn</button>
+                                    ) : (
+                                      ""
+                                    )}
+                                  </div>
                                 </div>
                               ))}
                             </div>

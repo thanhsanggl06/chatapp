@@ -81,6 +81,7 @@ io.on("connection", (socket) => {
 
   socket.on("logout", (userId) => {
     userLogout(userId);
+    io.emit("getUsers", users);
   });
 
   socket.on("disconnect", () => {

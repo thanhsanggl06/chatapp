@@ -87,6 +87,15 @@
               color: var(--icon-color);
               cursor: pointer;
               position: relative;
+              .request-add {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                position: absolute;
+                background-color: #fa5f5f;
+                top: 0%;
+                right: 0%;
+              }
               .search_friend.show {
                 transform: scale(1);
               }
@@ -223,6 +232,16 @@
   cursor: pointer;
   padding: 10px 20px;
   transition: background-color 0.3s ease;
+  position: relative;
+  .request-add {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    position: absolute;
+    background-color: #fa5f5f;
+    top: 0%;
+    right: 0%;
+  }
 }
 
 .tab-buttons button:hover {
