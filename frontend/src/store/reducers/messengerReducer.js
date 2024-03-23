@@ -1,5 +1,6 @@
 import { LOGOUT_SUCCESS } from "../types/authType";
 import {
+  ACCEPT_ADD_FRIEND,
   FRIEND_GET_SUCCESS,
   GET_MEMBER_SUCCESS,
   GET_REQUEST_ADD_FRIEND_SUCCESS,
@@ -96,6 +97,12 @@ export const messengerReducer = (state = messengerState, action) => {
     return {
       ...state,
       requestAddFriend: payload.request,
+    };
+  }
+  if (type === ACCEPT_ADD_FRIEND) {
+    return {
+      ...state,
+      requestAddFriend: payload,
     };
   }
   if (type === LOGOUT_SUCCESS) {

@@ -13,6 +13,7 @@ import useSound from "use-sound";
 import notificationSound from "../audio/notification.mp3";
 import Call from "./Call";
 import axios from "axios";
+import { ACCEPT_ADD_FRIEND } from "../store/types/messengerType";
 
 const Messenger = () => {
   const [notificationSPlay] = useSound(notificationSound);
@@ -113,11 +114,12 @@ const Messenger = () => {
   }, [socketMessage]);
 
   useEffect(() => {
-    socket.current.emit("addUser", myInfo.id, myInfo);
+    // socket.current.emit("addUser", myInfo.id, myInfo);
     dispatch(getRequestAddFriends());
   }, []);
 
   useEffect(() => {
+    socket.current.emit("addUser", myInfo.id, myInfo);
     socket.current.on("getUsers", async (users) => {
       const friendIds = friends?.map((fd) => fd.fndInfo._id);
       const friendsActive = users.filter((u) => {
@@ -233,11 +235,11 @@ const Messenger = () => {
     dispatch(getGroups());
   }, []);
 
-  useEffect(() => {
-    if (friends && friends.length > 0) {
-      setCurrentFriend(friends[0].fndInfo);
-    }
-  }, [friends]);
+  // useEffect(() => {
+  //   if (friends && friends.length > 0) {
+  //     // setCurrentFriend(friends[0].fndInfo);
+  //   }
+  // }, [friends]);
 
   useEffect(() => {
     if (message.length > 0) {
@@ -300,7 +302,9 @@ const Messenger = () => {
   const addFriend = async (fdId) => {
     try {
       const response = await axios.post(`/api/add-friend/${fdId}`);
-      console.log(response.data);
+      const index = searchUsers.findIndex((u) => u._id === fdId);
+      searchUsers[index].statusFriend = "request";
+      setSearchUsers(JSON.parse(JSON.stringify(searchUsers)));
     } catch (error) {
       console.log(error);
     }
@@ -309,7 +313,19 @@ const Messenger = () => {
   const acceptRequestFriend = async (fdId) => {
     try {
       const response = await axios.post(`/api/accept-friend-request/${fdId}`);
-      console.log(response.data);
+      let index;
+      if (searchUsers && searchUsers.length > 0) {
+        index = searchUsers.findIndex((u) => u._id === fdId);
+      }
+      if (index && index !== -1) {
+        searchUsers[index].statusFriend = "accepted";
+        setSearchUsers(JSON.parse(JSON.stringify(searchUsers)));
+      }
+     
+        dispatch({
+          type: ACCEPT_ADD_FRIEND,
+          payload: requestAddFriend.filter(u => u._id !== fdId)
+        });
     } catch (error) {
       console.log(error);
     }
@@ -466,7 +482,7 @@ const Messenger = () => {
                       <Friends myInfo={myInfo} friend={fd} />
                     </div>
                   ))
-                : "No friend"}
+                : ""}
             </div>
           </div>
         </div>
@@ -486,7 +502,12 @@ const Messenger = () => {
             typingMessage={typingMessage}
           />
         ) : (
-          ""
+          <div className="welcome">
+            <h3>Chào mừng bạn đến với ứng dụng Chatiuh</h3>
+            <div className="img-welcome">
+              <img src="https://i.pinimg.com/originals/ea/0e/46/ea0e4660412b069442f5600926b18ae0.png" alt="Chào mừng bạn đến với ứng dụng" />
+            </div>
+          </div>
         )}
       </div>
       <Call isOpen={isModalOpen} onClose={handleCloseModal}></Call>
