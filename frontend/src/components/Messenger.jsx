@@ -35,7 +35,8 @@ const Messenger = () => {
   const { friends, message, members, messageSendSuccess, messageGetSuccess, requestAddFriend } = useSelector((state) => state.messenger);
 
   useEffect(() => {
-    socket.current = io("ws://localhost:8000");
+    // socket.current = io("ws://localhost:8000");
+    socket.current = io("ws://54.254.206.58:8000");
     socket.current.on("getMessage", (data) => {
       setSocketMessage(data);
     });
@@ -321,11 +322,11 @@ const Messenger = () => {
         searchUsers[index].statusFriend = "accepted";
         setSearchUsers(JSON.parse(JSON.stringify(searchUsers)));
       }
-     
-        dispatch({
-          type: ACCEPT_ADD_FRIEND,
-          payload: requestAddFriend.filter(u => u._id !== fdId)
-        });
+
+      dispatch({
+        type: ACCEPT_ADD_FRIEND,
+        payload: requestAddFriend.filter((u) => u._id !== fdId),
+      });
     } catch (error) {
       console.log(error);
     }
