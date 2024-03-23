@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const dotenv = require("dotenv");
+const cors = require("cors");
 
 const dbConnect = require("./config/database");
 const authRouter = require("./routes/authRoute");
@@ -14,6 +15,11 @@ dotenv.config({
 
 app.use(bodyParser.json());
 app.use(cookieParser());
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 app.use("/api", authRouter);
 app.use("/api", messengerRoute);
 
