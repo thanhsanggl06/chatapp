@@ -18,7 +18,7 @@ const ActiveFriend = ({ activeFriends, setCurrentFriend }) => {
                   })
                 }
               >
-                <img src={`/image/${af.userInfo.image}`} alt="" />
+                <img src={`https://iuh-cnm-chatapp.s3.ap-southeast-1.amazonaws.com/${af.userInfo.image}`} alt="" />
                 <div className="active-icon"></div>
               </div>
             ))

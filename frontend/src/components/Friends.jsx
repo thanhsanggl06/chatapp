@@ -10,7 +10,7 @@ const Friends = (props) => {
     <div className="friend">
       <div className="friend-image">
         <div className="image">
-          <img src={`/image/${fndInfo.image}`} alt="" />
+          <img src={`https://iuh-cnm-chatapp.s3.ap-southeast-1.amazonaws.com/${fndInfo.image}`} alt="" />
         </div>
       </div>
 
@@ -34,7 +34,7 @@ const Friends = (props) => {
         {id === msgInfo?.senderId && fndInfo.username ? (
           <div className="seen-unseen-icon">
             {msgInfo.status === "seen" ? (
-              <img src={`./image/${fndInfo.image}`} alt="" />
+              <img src={`https://iuh-cnm-chatapp.s3.ap-southeast-1.amazonaws.com/${fndInfo.image}`} alt="" />
             ) : (
               <div className="delivared">
                 {" "}

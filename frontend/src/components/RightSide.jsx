@@ -16,7 +16,7 @@ const RightSide = (props) => {
               <div className="header">
                 <div className="image-name">
                   <div className="image">
-                    <img src={`/image/${currentFriend.image}`} alt="" />
+                    <img src={`https://iuh-cnm-chatapp.s3.ap-southeast-1.amazonaws.com/${currentFriend.image}`} alt="" />
                     {activeFriends && activeFriends.length > 0 && activeFriends.some((af) => af.userInfo.id === currentFriend._id) ? <div className="active-icon"></div> : ""}
                   </div>
                   <div className="name">

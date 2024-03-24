@@ -8,7 +8,7 @@ const FriendInfo = (props) => {
       <input type="checkbox" id="gallery" />
       <div className="image-name">
         <div className="image">
-          <img src={`/image/${currentFriend.image}`} alt="" />
+          <img src={`https://iuh-cnm-chatapp.s3.ap-southeast-1.amazonaws.com/${currentFriend.image}`} alt="" />
         </div>
 
         <div className="active-user">

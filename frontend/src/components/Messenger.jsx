@@ -35,8 +35,8 @@ const Messenger = () => {
   const { friends, message, members, messageSendSuccess, messageGetSuccess, requestAddFriend } = useSelector((state) => state.messenger);
 
   useEffect(() => {
-    // socket.current = io("ws://localhost:8000");
-    socket.current = io("ws://54.254.206.58:8000");
+    socket.current = io("ws://localhost:8000");
+    //socket.current = io("ws://54.254.206.58:8000");
     socket.current.on("getMessage", (data) => {
       setSocketMessage(data);
     });
@@ -362,7 +362,7 @@ const Messenger = () => {
             <div className="top">
               <div className="image-name">
                 <div className="image">
-                  <img src={`/image/${myInfo.image}`} alt="" />
+                  <img src={`https://iuh-cnm-chatapp.s3.ap-southeast-1.amazonaws.com/${myInfo.image}`} alt="" />
                 </div>
                 <div className="name">
                   <h3> {myInfo.username} </h3>
@@ -401,7 +401,7 @@ const Messenger = () => {
                                 <div className="user">
                                   <div className="user-info">
                                     <div className="image">
-                                      <img src={`/image/${u.image}`} alt="img" />
+                                      <img src={`https://iuh-cnm-chatapp.s3.ap-southeast-1.amazonaws.com/${u.image}`} alt="img" />
                                     </div>
                                     <div className="name">
                                       <h3>{u.username}</h3>
@@ -432,7 +432,7 @@ const Messenger = () => {
                                 <div className="user">
                                   <div className="user-info">
                                     <div className="image">
-                                      <img src={`/image/${u.image}`} alt="img" />
+                                      <img src={`https://iuh-cnm-chatapp.s3.ap-southeast-1.amazonaws.com/${u.image}`} alt="img" />
                                     </div>
                                     <div className="name">
                                       <h3>{u.username}</h3>

@@ -4,6 +4,9 @@ const registerModel = require("../models/authModel");
 const fs = require("fs");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const AWS = require("aws-sdk");
+
+process.env.AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE = "1";
 
 module.exports.userRegister = (req, res) => {
   const form = formidable();
@@ -150,9 +153,22 @@ module.exports.userRegister = (req, res) => {
               },
             });
           } else {
-            fs.copyFile(files.image.filepath, newPath, async (error) => {
-              // if copy file image success
-              if (!error) {
+            AWS.config.update({
+              region: process.env.REGION,
+              accessKeyId: process.env.ACCESS_KEY_ID,
+              secretAccessKey: process.env.SECRET_ACCESS_KEY,
+            });
+            const s3 = new AWS.S3();
+
+            //to do upload image to S3
+            const paramsS3 = {
+              Bucket: process.env.S3_BUCKET_NAME,
+              Key: newImageName,
+              Body: fs.readFileSync(files.image.filepath),
+              ContentType: files.image.mimetype,
+            };
+            s3.upload(paramsS3, async (err, data) => {
+              if (!err) {
                 // add user to db
                 const userCreate = await registerModel.create({
                   username,
@@ -196,6 +212,10 @@ module.exports.userRegister = (req, res) => {
                 });
               }
             });
+            // fs.copyFile(files.image.filepath, newPath, async (error) => {
+            //   // if copy file image success
+
+            // });
           }
         } catch (error) {
           res.status(500).json({

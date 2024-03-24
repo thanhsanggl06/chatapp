@@ -3,6 +3,9 @@ const group = require("../models/groupModel");
 const messageModel = require("../models/messageModel");
 const formidable = require("formidable");
 const fs = require("fs");
+const AWS = require("aws-sdk");
+
+process.env.AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE = "1";
 
 const getLastMessage = async (myId, fdId) => {
   const msg = await messageModel
@@ -252,22 +255,32 @@ module.exports.imageMessageSend = async (req, res) => {
   form.parse(req, (err, fields, files) => {
     const senderId = req.myId;
     const { senderName, imageName, receiverId, groupId } = fields;
-    //to do upload image to S3
-    const newPath = __dirname + `../../../frontend/public/image/${imageName}`;
-    files.image.originalFilename = imageName;
+    AWS.config.update({
+      region: process.env.REGION,
+      accessKeyId: process.env.ACCESS_KEY_ID,
+      secretAccessKey: process.env.SECRET_ACCESS_KEY,
+    });
+    const s3 = new AWS.S3();
 
+    //to do upload image to S3
+    const paramsS3 = {
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: imageName,
+      Body: fs.readFileSync(files.image.filepath),
+      ContentType: files.image.mimetype,
+    };
+    files.image.originalFilename = imageName;
     try {
-      fs.copyFile(files.image.filepath, newPath, async (err) => {
-        //upload fail
+      s3.upload(paramsS3, async (err, data) => {
         if (err) {
+          console.log(err);
           res.status(500).json({
             error: {
               errorMessage: "Image upload fail",
             },
           });
-        }
-        // upload success
-        else {
+        } else {
+          fs.unlinkSync(files.image.filepath);
           let newMessage;
           if (receiverId) {
             newMessage = {
@@ -291,7 +304,6 @@ module.exports.imageMessageSend = async (req, res) => {
             };
           }
           const insertMessage = await messageModel.create(newMessage);
-
           res.status(201).json({
             success: true,
             message: insertMessage,
@@ -299,6 +311,7 @@ module.exports.imageMessageSend = async (req, res) => {
         }
       });
     } catch (error) {
+      console.log(error);
       res.status(500).json({
         error: {
           errorMessage: "Internal Server Error",
