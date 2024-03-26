@@ -1,7 +1,7 @@
 .register {
   width: 100%;
   height: 100vh;
-  background-color: azure;
+  background-color: rgb(170, 214, 255);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -9,7 +9,7 @@
     .card-header {
       h3 {
         text-align: center;
-        color: #fff;
+        color: #333;
       }
     }
     .card-body {
@@ -26,7 +26,7 @@
         span {
           text-align: center;
           a {
-            color: #fff;
+            color: #0190f3;
           }
         }
         .file-image {
