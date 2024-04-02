@@ -185,9 +185,9 @@ const Messenger = () => {
       // check valid file size
       const selectedFile = e.target.files[0];
       if (selectedFile) {
-        const maxSizeInBytes = 2 * 1024 * 1024;
+        const maxSizeInBytes = 50 * 1024 * 1024; //50mb
         if (selectedFile.size > maxSizeInBytes) {
-          alert.error(`Dung lượng tệp tin không được vượt quá 2MB.`);
+          alert.error(`Dung lượng tệp tin không được vượt quá 50MB.`);
           e.target.value = null; // Reset input value
           return;
         }

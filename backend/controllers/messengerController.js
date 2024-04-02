@@ -251,8 +251,33 @@ module.exports.getMessageGroup = async (req, res) => {
 
 module.exports.imageMessageSend = async (req, res) => {
   const form = formidable();
+  const allowedExtensionsRegex = /\.(jpg|jpeg|png|gif|bmp|mp4|avi|mov|wmv|pdf|docx)$/i;
+  const maxFileSize = 50 * 1024 * 1024; // 50MB
 
   form.parse(req, (err, fields, files) => {
+    if (err) {
+      return res.status(500).json({
+        error: {
+          errorMessage: "Internal Server Error",
+        },
+      });
+    }
+    const uploadedFile = files.image;
+
+    if (uploadedFile.size > maxFileSize) {
+      return res.status(400).json({
+        success: false,
+        message: "File size cannot be larger than 5Mb",
+      });
+    }
+
+    if (!allowedExtensionsRegex.test(uploadedFile.originalFilename)) {
+      return res.status(400).json({
+        success: false,
+        message: "File type not support",
+      });
+    }
+
     const senderId = req.myId;
     const { senderName, imageName, receiverId, groupId } = fields;
     AWS.config.update({
