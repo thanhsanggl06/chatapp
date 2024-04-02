@@ -36,7 +36,7 @@ module.exports.userRegister = (req, res) => {
       const age = currentDate.getFullYear() - birthdayValid.getFullYear();
 
       if (age < 12) {
-        error.push("You are not old enough to register");
+        error.push("Bạn chưa đủ tuổi để đăng ký");
       } else if (age == 12) {
         const currentMonth = currentDate.getMonth();
         const birthMonth = birthdayValid.getMonth();
@@ -44,7 +44,7 @@ module.exports.userRegister = (req, res) => {
         const birthDay = birthdayValid.getDate();
         if (currentMonth > birthMonth || (currentMonth === birthMonth && currentDay >= birthDay)) {
         } else {
-          error.push("You are not old enough to register");
+          error.push("Bạn chưa đủ tuổi để đăng ký");
         }
       }
     }

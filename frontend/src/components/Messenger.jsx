@@ -14,6 +14,7 @@ import notificationSound from "../audio/notification.mp3";
 import Call from "./Call";
 import axios from "axios";
 import { ACCEPT_ADD_FRIEND } from "../store/types/messengerType";
+import ProfileInfo from "./ProfileInfo";
 
 const Messenger = () => {
   const [notificationSPlay] = useSound(notificationSound);
@@ -24,6 +25,7 @@ const Messenger = () => {
   const alert = useAlert();
 
   const [isModalOpen, setModalOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("tab1");
   const [currentFriend, setCurrentFriend] = useState("");
   const [newMessage, setNewMessage] = useState("");
@@ -345,6 +347,14 @@ const Messenger = () => {
     setModalOpen(false);
   };
 
+  const handleOpenProfileInfo = () => {
+    setProfileOpen(true);
+  };
+
+  const handleCloseProfileInfo = () => {
+    setProfileOpen(false);
+  };
+
   return (
     <div className="messenger">
       <Toaster
@@ -361,7 +371,12 @@ const Messenger = () => {
           <div className="left-side">
             <div className="top">
               <div className="image-name">
-                <div className="image">
+                <div
+                  className="image"
+                  onClick={() => {
+                    handleOpenProfileInfo();
+                  }}
+                >
                   <img src={`https://iuh-cnm-chatapp.s3.ap-southeast-1.amazonaws.com/${myInfo.image}`} alt="" />
                 </div>
                 <div className="name">
@@ -512,6 +527,7 @@ const Messenger = () => {
         )}
       </div>
       <Call isOpen={isModalOpen} onClose={handleCloseModal}></Call>
+      <ProfileInfo isOpen={profileOpen} onClose={handleCloseProfileInfo} myInfo={myInfo}></ProfileInfo>
     </div>
   );
 };
