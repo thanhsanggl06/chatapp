@@ -43,7 +43,6 @@ const GroupChatModal = ({ isOpen, onClose }) => {
     formData.append("name", groupName);
     formData.append("image", image);
     formData.append("members", JSON.stringify(members));
-
     dispatch(createNewGroup(formData));
     setSelectedUser([]);
     setImage("");
@@ -85,7 +84,7 @@ const GroupChatModal = ({ isOpen, onClose }) => {
           <div className="info-group">
             <input type="file" name="image" id="actual-btn" accept="image/*" onChange={fileHandle} hidden />
             <label htmlFor="actual-btn">{loadImage ? <img src={loadImage} className="avatar-group" /> : <img src="/image/cameraa.png" className="avatar-group" />}</label>
-            <input type="text" onChange={(e) => setGroupName(e.target.value)} placeholder="Nhập tên nhóm" className="form-control" />
+            <input type="text" onChange={(e) => setGroupName(e.target.value)} value={groupName} placeholder="Nhập tên nhóm" className="form-control" />
           </div>
           <div className="search">
             <button>
@@ -93,7 +92,7 @@ const GroupChatModal = ({ isOpen, onClose }) => {
             </button>
             <input onChange={handleSearchUser} type="text" placeholder="Search" className="form-control" />
           </div>
-          {/* {selectedUser} */}
+
           <div className="selected_users">
             {selectedUser.map((u) => (
               <div className="user">

@@ -38,7 +38,8 @@
     margin: 10px 0px;
     .custom-chat,
     .privacy,
-    .media {
+    .media,
+    .members {
       display: flex;
       flex-direction: row;
       justify-content: space-between;
@@ -73,5 +74,50 @@
   }
   #gallery:checked ~ .gallery {
     display: grid;
+  }
+
+  .member-list {
+    overflow-y: auto;
+    display: none;
+    max-height: 300px;
+    .user {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      .user-info {
+        display: flex;
+        .image {
+          img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 1px solid var(--text-color);
+          }
+        }
+        .name {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          h3 {
+            padding-left: 10px;
+            font-weight: 600;
+            color: var(--text-color);
+          }
+        }
+      }
+      .action {
+        .action-icon {
+          font-size: large;
+          cursor: pointer;
+        }
+      }
+    }
+  }
+
+  #member-list {
+    display: none;
+  }
+  #member-list:checked ~ .member-list {
+    display: block;
   }
 }

@@ -9,6 +9,7 @@ import {
   MESSAGE_GET_SUCCESS,
   MESSAGE_GET_SUCCESS_CLEAR,
   MESSAGE_SEND_SUCCESS,
+  REMOVE_MEMBER_SUCCESS,
   SEEN_MESSAGE,
   SOCKET_MESSAGE,
   SOCKET_MESSAGE_NEW,
@@ -110,6 +111,12 @@ export const messengerReducer = (state = messengerState, action) => {
     return {
       ...state,
       friends: [payload.message, ...state.friends],
+    };
+  }
+  if (type === REMOVE_MEMBER_SUCCESS) {
+    return {
+      ...state,
+      members: state.members.filter((m) => m.userId._id !== payload.message),
     };
   }
   if (type === LOGOUT_SUCCESS) {

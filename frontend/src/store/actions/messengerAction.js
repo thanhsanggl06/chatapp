@@ -7,6 +7,7 @@ import {
   GROUPS_GET_SUCCESS,
   MESSAGE_GET_SUCCESS,
   MESSAGE_SEND_SUCCESS,
+  REMOVE_MEMBER_SUCCESS,
 } from "../types/messengerType";
 
 export const getFriends = (id) => async (dispatch) => {
@@ -147,6 +148,20 @@ export const getRequestAddFriends = () => async (dispatch) => {
       type: GET_REQUEST_ADD_FRIEND_SUCCESS,
       payload: {
         request: response.data.request,
+      },
+    });
+  } catch (error) {
+    console.log(error.response.message);
+  }
+};
+
+export const removeMember = (groupId, userId) => async (dispatch) => {
+  try {
+    const response = await axios.delete(`/api/group/${groupId}/remove-member/${userId}`);
+    dispatch({
+      type: REMOVE_MEMBER_SUCCESS,
+      payload: {
+        message: userId,
       },
     });
   } catch (error) {

@@ -1,8 +1,27 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { FaCaretSquareDown } from "react-icons/fa";
+import { IoIosRemoveCircleOutline } from "react-icons/io";
+import { AiFillMessage } from "react-icons/ai";
+import { useAlert } from "react-alert";
+import { useDispatch } from "react-redux";
+import { removeMember } from "../store/actions/messengerAction";
 
 const FriendInfo = (props) => {
-  const { currentFriend, activeFriends } = props;
+  const alert = useAlert();
+  const dispatch = useDispatch();
+  const { currentFriend, activeFriends, members, myInfo, friends, setCurrentFriend } = props;
+  const admin = members.find((m) => m.role === "admin");
+  const friendIds = friends.map((f) => f.fndInfo._id);
+  const deleteMember = async (userId) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa thành viên này?")) {
+      try {
+        await dispatch(removeMember(currentFriend._id, userId));
+        alert.success("Xóa thành viên ra khỏi đoạn chat thành công!");
+      } catch (error) {
+        alert.error("Xóa thành viên không thành công!");
+      }
+    }
+  };
   return (
     <div className="friend-info">
       <input type="checkbox" id="gallery" />
@@ -30,7 +49,38 @@ const FriendInfo = (props) => {
           <h3>Quyền riêng tư </h3>
           <FaCaretSquareDown />
         </div>
-        {currentFriend.name ? <h3>Members</h3> : ""}
+        <input type="checkbox" id="member-list" />
+
+        {currentFriend.name ? (
+          <div className="members">
+            <h3>Danh sách thành viên </h3>
+            <label htmlFor="member-list">
+              <FaCaretSquareDown />
+            </label>
+          </div>
+        ) : (
+          ""
+        )}
+        {currentFriend.name && (
+          <div className="member-list">
+            {members.map((u) => (
+              <div key={u._id} className="user">
+                <div className="user-info">
+                  <div className="image">
+                    <img src={`https://iuh-cnm-chatapp.s3.ap-southeast-1.amazonaws.com/${u.userId.image}`} alt="img" />
+                  </div>
+                  <div className="name">
+                    <h3>{u.userId.username}</h3>
+                  </div>
+                </div>
+                <div className="action">
+                  {myInfo.id !== u.userId._id && friendIds.includes(u.userId._id) ? <AiFillMessage className="action-icon" onClick={() => setCurrentFriend(u.userId)} /> : ""}
+                  {myInfo.id === admin.userId._id && myInfo.id !== u.userId._id ? <IoIosRemoveCircleOutline className="action-icon" onClick={() => deleteMember(u.userId._id)} /> : ""}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="media">
           <h3>File đã chia sẽ </h3>

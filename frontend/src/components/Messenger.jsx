@@ -521,6 +521,9 @@ const Messenger = () => {
             activeFriends={activeFriends}
             handleCallVideo={handleCallVideo}
             typingMessage={typingMessage}
+            myInfo={myInfo}
+            friends={friends}
+            setCurrentFriend={setCurrentFriend}
           />
         ) : (
           <div className="welcome">

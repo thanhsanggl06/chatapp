@@ -52,6 +52,8 @@ const getLastMessage = async (myId, fdId) => {
   return msg;
 };
 
+const DEFAULT_AVATAR_GROUP = "chatggroup.png";
+
 module.exports.getFriends = async (req, res) => {
   try {
     const { id } = req.params;
@@ -139,9 +141,10 @@ module.exports.createNewGroup = async (req, res) => {
           },
         });
       }
+
       const { name, members } = fields;
       const { image } = files;
-      let imageName = "chatggroup.png";
+      let imageName = DEFAULT_AVATAR_GROUP;
       const mem = JSON.parse(members);
 
       let newMembers = [{ userId: myId.toString(), role: "admin" }, ...mem];
@@ -155,7 +158,15 @@ module.exports.createNewGroup = async (req, res) => {
       }
       //no file reiceive
       if (Object.keys(files).length === 0) {
-        imageName = "chatggroup.png";
+        imageName = DEFAULT_AVATAR_GROUP;
+        const newGroup = new group({
+          name,
+          createdBy: myId.toString(),
+          members: newMembers,
+          image: imageName,
+        });
+        const response = await newGroup.save();
+        return res.status(201).json({ success: true, message: { fndInfo: response, msgInfo: { message: { text: "Nhóm được tạo" }, createdAt: response.createdAt } } });
       } else {
         try {
           AWS.config.update({
@@ -178,6 +189,7 @@ module.exports.createNewGroup = async (req, res) => {
             //upload fail using default img
             if (err) {
               imageName = "chatggroup.png";
+              console.log(err);
             } else {
               const newGroup = new group({
                 name,
@@ -557,5 +569,25 @@ module.exports.getRequestAddFriend = async (req, res) => {
         errorMessage: "Internal Sever Error ",
       },
     });
+  }
+};
+
+module.exports.removeMember = async (req, res) => {
+  const { grId, userId } = req.params;
+  const myId = req.myId;
+
+  const groupRs = await group.findById(grId);
+  if (!groupRs) {
+    return res.status(404).json({ message: "Group not found" });
+  }
+
+  const adminRole = groupRs.members.filter((m) => m.role === "admin" || m.role === "subadmin").map((m) => m.userId.toString());
+
+  if (adminRole.includes(myId)) {
+    groupRs.members = groupRs.members.filter((member) => member.userId.toString() !== userId);
+    await groupRs.save();
+    return res.status(200).json({ success: true, message: "Remove member success" });
+  } else {
+    return res.status(403).json({ success: false, message: "Not enough permissions" });
   }
 };
