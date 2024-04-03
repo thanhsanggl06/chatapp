@@ -1,5 +1,13 @@
 import axios from "axios";
-import { FRIEND_GET_SUCCESS, GET_MEMBER_SUCCESS, GET_REQUEST_ADD_FRIEND_SUCCESS, GROUPS_GET_SUCCESS, MESSAGE_GET_SUCCESS, MESSAGE_SEND_SUCCESS } from "../types/messengerType";
+import {
+  CREATE_NEW_GROUP_SUCCESS,
+  FRIEND_GET_SUCCESS,
+  GET_MEMBER_SUCCESS,
+  GET_REQUEST_ADD_FRIEND_SUCCESS,
+  GROUPS_GET_SUCCESS,
+  MESSAGE_GET_SUCCESS,
+  MESSAGE_SEND_SUCCESS,
+} from "../types/messengerType";
 
 export const getFriends = (id) => async (dispatch) => {
   try {
@@ -79,6 +87,27 @@ export const getMessageGroup = (id) => {
       const response = await axios.get(`/api/get-message-group/${id}`);
       dispatch({
         type: MESSAGE_GET_SUCCESS,
+        payload: {
+          message: response.data.message,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+};
+
+export const createNewGroup = (data) => {
+  return async (dispatch) => {
+    const config = {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    };
+    try {
+      const response = await axios.post(`/api/create-new-group`, data, config);
+      dispatch({
+        type: CREATE_NEW_GROUP_SUCCESS,
         payload: {
           message: response.data.message,
         },

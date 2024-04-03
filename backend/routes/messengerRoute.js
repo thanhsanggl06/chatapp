@@ -13,6 +13,7 @@ const {
   addFriend,
   acceptFriendRequest,
   getRequestAddFriend,
+  createNewGroup,
 } = require("../controllers/messengerController");
 const { authMiddleware } = require("../middleware/authMiddleware");
 
@@ -28,5 +29,6 @@ router.post("/add-friend/:fdId", authMiddleware, addFriend);
 router.post("/accept-friend-request/:fdId", authMiddleware, acceptFriendRequest);
 router.get("/get-requestAddFriends", authMiddleware, getRequestAddFriend);
 router.get("/search", authMiddleware, searchUser);
+router.post("/create-new-group", authMiddleware, createNewGroup);
 
 module.exports = router;

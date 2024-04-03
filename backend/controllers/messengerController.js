@@ -93,7 +93,7 @@ module.exports.getGroups = async (req, res) => {
     for (let i = 0; i < groups.length; i++) {
       let lmsg = await getLastMessage(userId, groups[i]._id.toString());
       if (!lmsg) {
-        lmsg = { createdAt: groups[i].createdAt };
+        lmsg = { message: { text: "Nhóm được tạo" }, createdAt: groups[i].createdAt };
       }
       grp_msg = [
         ...grp_msg,
@@ -127,18 +127,87 @@ module.exports.getGroupMembers = async (req, res) => {
   }
 };
 
-// const newGroup = new group({
-//   name: "test",
-//   createdBy: "65b0a6707ac77151a83f6512",
-//   members: [
-//     { userId: "65b0a6707ac77151a83f6512", role: "admin" },
-//     { userId: "65b0b35dc176625d5baea477", role: "member" },
-//     { userId: "65b0b3b5c176625d5baea47a", role: "member" },
-//   ],
-//   image: "https://banner2.cleanpng.com/20180329/bcw/kisspng-computer-icons-online-chat-chat-room-group-5abcf76914f315.2847498915223335450858.jpg",
-// });
+module.exports.createNewGroup = async (req, res) => {
+  try {
+    const myId = req.myId;
+    const form = formidable();
+    form.parse(req, async (err, fields, files) => {
+      if (err) {
+        return res.status(500).json({
+          error: {
+            errorMessage: "Internal Sever Error ",
+          },
+        });
+      }
+      const { name, members } = fields;
+      const { image } = files;
+      let imageName = "chatggroup.png";
+      const mem = JSON.parse(members);
 
-// await newGroup.save();
+      let newMembers = [{ userId: myId.toString(), role: "admin" }, ...mem];
+
+      if (newMembers.length < 3) {
+        return res.status(400).json({
+          error: {
+            errorMessage: "The group must be created from at least 3 members",
+          },
+        });
+      }
+      //no file reiceive
+      if (Object.keys(files).length === 0) {
+        imageName = "chatggroup.png";
+      } else {
+        try {
+          AWS.config.update({
+            region: process.env.REGION,
+            accessKeyId: process.env.ACCESS_KEY_ID,
+            secretAccessKey: process.env.SECRET_ACCESS_KEY,
+          });
+          const s3 = new AWS.S3();
+
+          imageName = Date.now() + image.originalFilename;
+
+          const paramsS3 = {
+            Bucket: process.env.S3_BUCKET_NAME,
+            Key: imageName,
+            Body: fs.readFileSync(files.image.filepath),
+            ContentType: files.image.mimetype,
+          };
+
+          await s3.upload(paramsS3, async (err, data) => {
+            //upload fail using default img
+            if (err) {
+              imageName = "chatggroup.png";
+            } else {
+              const newGroup = new group({
+                name,
+                createdBy: myId.toString(),
+                members: newMembers,
+                image: imageName,
+              });
+              const response = await newGroup.save();
+              return res.status(201).json({ success: true, message: { fndInfo: response, msgInfo: { message: { text: "Nhóm được tạo" }, createdAt: response.createdAt } } });
+            }
+          });
+        } catch (error) {
+          console.log(error);
+          return res.status(500).json({
+            error: {
+              errorMessage: "Internal Server Error",
+            },
+          });
+        }
+      }
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      error: {
+        errorMessage: "Internal Server Error",
+      },
+    });
+  }
+};
 
 module.exports.messageUploadDB = async (req, res) => {
   const { senderName, receiverId, message, groupId, senderAvatar } = req.body;
@@ -459,7 +528,8 @@ module.exports.acceptFriendRequest = async (req, res) => {
     }
 
     await User.updateOne({ _id: fdId, "friends.friendId": myId }, { $set: { "friends.$.status": "accepted" } });
-    res.status(200).json({ success: true });
+    const newFd = await User.findById(fdId);
+    res.status(200).json({ success: true, message: { fndInfo: newFd, msgInfo: { createdAt: newFd.updatedAt } } });
   } catch (error) {
     console.error(error);
     res.status(500).json({

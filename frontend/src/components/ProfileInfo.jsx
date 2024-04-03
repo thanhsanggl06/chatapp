@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 const ProfileInfo = ({ isOpen, onClose, myInfo }) => {
   return (
     <div className={`modal ${isOpen ? "open" : ""}`}>
-      <div className="modal-content">
+      <div className="modal-profile">
         <span className="close" onClick={onClose}>
           &times;
         </span>

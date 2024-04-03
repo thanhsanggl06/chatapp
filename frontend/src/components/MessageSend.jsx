@@ -27,10 +27,10 @@ const MessageSend = ({ inputHandle, newMessage, sendMessage, emojiSend, imageSen
         </label>
       </div>
 
-      <div className="file hover-gift">
+      {/* <div className="file hover-gift">
         <div className="add-gift">Add gift</div>
         <FaGift />
-      </div>
+      </div> */}
 
       <div className="message-type">
         <input type="text" name="message" onChange={inputHandle} id="message" placeholder="Aa" className="form-control" value={newMessage} />

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { FaEllipsisH, FaEdit, FaSistrix, FaSignOutAlt, FaUserFriends } from "react-icons/fa";
+import { MdGroups } from "react-icons/md";
 import ActiveFriend from "./ActiveFriend";
 import Friends from "./Friends";
 import RightSide from "./RightSide";
@@ -15,6 +16,7 @@ import Call from "./Call";
 import axios from "axios";
 import { ACCEPT_ADD_FRIEND } from "../store/types/messengerType";
 import ProfileInfo from "./ProfileInfo";
+import GroupChatModal from "./GroupChatModal";
 
 const Messenger = () => {
   const [notificationSPlay] = useSound(notificationSound);
@@ -25,6 +27,7 @@ const Messenger = () => {
   const alert = useAlert();
 
   const [isModalOpen, setModalOpen] = useState(false);
+  const [isModalGroupOpen, setModalGroupOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("tab1");
   const [currentFriend, setCurrentFriend] = useState("");
@@ -316,6 +319,7 @@ const Messenger = () => {
   const acceptRequestFriend = async (fdId) => {
     try {
       const response = await axios.post(`/api/accept-friend-request/${fdId}`);
+      console.log(response);
       let index;
       if (searchUsers && searchUsers.length > 0) {
         index = searchUsers.findIndex((u) => u._id === fdId);
@@ -344,6 +348,7 @@ const Messenger = () => {
   };
 
   const handleCloseModal = () => {
+    setModalGroupOpen(false);
     setModalOpen(false);
   };
 
@@ -467,11 +472,11 @@ const Messenger = () => {
                     </div>
                   </div>
                 </div>
+                <div className="icon" onClick={() => setModalGroupOpen(true)}>
+                  <MdGroups />
+                </div>
                 <div onClick={() => setHide(!hide)} className="icon">
                   <FaEllipsisH />
-                </div>
-                <div className="icon">
-                  <FaEdit />
                 </div>
                 <div className={hide ? "theme_logout" : "theme_logout show"}>
                   <div onClick={logout} className="logout">
@@ -528,6 +533,7 @@ const Messenger = () => {
       </div>
       <Call isOpen={isModalOpen} onClose={handleCloseModal}></Call>
       <ProfileInfo isOpen={profileOpen} onClose={handleCloseProfileInfo} myInfo={myInfo}></ProfileInfo>
+      <GroupChatModal isOpen={isModalGroupOpen} onClose={handleCloseModal}></GroupChatModal>
     </div>
   );
 };
