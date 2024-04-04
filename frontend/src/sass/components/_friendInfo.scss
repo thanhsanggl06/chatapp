@@ -36,6 +36,31 @@
     display: flex;
     flex-direction: column;
     margin: 10px 0px;
+    .group-action {
+      display: flex;
+      color: var(--text-color);
+      justify-content: space-around;
+      .icon-action:hover .icon {
+        background-color: #c4c4c4;
+      }
+      .icon-action {
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        width: 60px;
+        align-content: center;
+        .icon {
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          background-color: #dadada;
+          font-size: x-large;
+        }
+        .icon-label {
+          font-size: medium;
+        }
+      }
+    }
     .custom-chat,
     .privacy,
     .media,

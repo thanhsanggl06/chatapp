@@ -1,14 +1,22 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { FaCaretSquareDown } from "react-icons/fa";
-import { IoIosRemoveCircleOutline } from "react-icons/io";
+import { IoIosRemoveCircleOutline, IoMdPersonAdd } from "react-icons/io";
+import { CiLogout } from "react-icons/ci";
 import { AiFillMessage } from "react-icons/ai";
 import { useAlert } from "react-alert";
 import { useDispatch } from "react-redux";
-import { removeMember } from "../store/actions/messengerAction";
+import { leaveGroup, removeMember } from "../store/actions/messengerAction";
+import AddMemberModal from "./AddMemberModal";
 
 const FriendInfo = (props) => {
   const alert = useAlert();
   const dispatch = useDispatch();
+  const [isModalAddMemberOpen, setModalAddMember] = useState(false);
+
+  const handleCloseModal = () => {
+    setModalAddMember(false);
+  };
+
   const { currentFriend, activeFriends, members, myInfo, friends, setCurrentFriend } = props;
   const admin = members.find((m) => m.role === "admin");
   const friendIds = friends.map((f) => f.fndInfo._id);
@@ -19,6 +27,18 @@ const FriendInfo = (props) => {
         alert.success("Xóa thành viên ra khỏi đoạn chat thành công!");
       } catch (error) {
         alert.error("Xóa thành viên không thành công!");
+      }
+    }
+  };
+
+  const handleLeaveGroup = () => {
+    if (window.confirm("Bạn có chắc chắn muốn rời khỏi nhóm?")) {
+      try {
+        dispatch(leaveGroup(currentFriend._id));
+        setCurrentFriend("");
+        alert.success("Rời nhóm thành công!");
+      } catch (error) {
+        alert.error("Rời nhóm không thành công!");
       }
     }
   };
@@ -40,6 +60,19 @@ const FriendInfo = (props) => {
       </div>
 
       <div className="others">
+        {currentFriend.name && (
+          <div className="group-action">
+            <div className="icon-action" onClick={() => setModalAddMember(true)}>
+              <IoMdPersonAdd className="icon" />
+              <span className="icon-label">Thêm thành viên</span>
+            </div>
+            <div className="icon-action" onClick={handleLeaveGroup}>
+              <CiLogout className="icon" />
+              <span className="icon-label">Rời nhóm</span>
+            </div>
+          </div>
+        )}
+
         <div className="custom-chat">
           <h3>Tùy chỉnh </h3>
           <FaCaretSquareDown />
@@ -96,6 +129,7 @@ const FriendInfo = (props) => {
         <img src="/image/16964casio-mtp-m100l-7avdf-nam-thumb-600x600.jpg" alt="" />
         <img src="/image/16964casio-mtp-m100l-7avdf-nam-thumb-600x600.jpg" alt="" />
       </div>
+      <AddMemberModal isOpen={isModalAddMemberOpen} onClose={handleCloseModal} members={members} currentFriend={currentFriend}></AddMemberModal>
     </div>
   );
 };

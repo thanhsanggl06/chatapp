@@ -1,11 +1,13 @@
 import { LOGOUT_SUCCESS } from "../types/authType";
 import {
   ACCEPT_ADD_FRIEND,
+  ADD_MEMBER_TO_GROUP_SUCCESS,
   CREATE_NEW_GROUP_SUCCESS,
   FRIEND_GET_SUCCESS,
   GET_MEMBER_SUCCESS,
   GET_REQUEST_ADD_FRIEND_SUCCESS,
   GROUPS_GET_SUCCESS,
+  LEAVE_GROUP_SUCCESS,
   MESSAGE_GET_SUCCESS,
   MESSAGE_GET_SUCCESS_CLEAR,
   MESSAGE_SEND_SUCCESS,
@@ -117,6 +119,18 @@ export const messengerReducer = (state = messengerState, action) => {
     return {
       ...state,
       members: state.members.filter((m) => m.userId._id !== payload.message),
+    };
+  }
+  if (type === LEAVE_GROUP_SUCCESS) {
+    return {
+      ...state,
+      friends: state.friends.filter((f) => f.fndInfo._id !== payload.message),
+    };
+  }
+  if (type === ADD_MEMBER_TO_GROUP_SUCCESS) {
+    return {
+      ...state,
+      members: payload.message,
     };
   }
   if (type === LOGOUT_SUCCESS) {

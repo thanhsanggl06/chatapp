@@ -591,3 +591,54 @@ module.exports.removeMember = async (req, res) => {
     return res.status(403).json({ success: false, message: "Not enough permissions" });
   }
 };
+
+module.exports.leaveGroup = async (req, res) => {
+  try {
+    const { grId } = req.params;
+    const myId = req.myId;
+
+    const groupRs = await group.findById(grId);
+    if (!groupRs) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+    groupRs.members = groupRs.members.filter((member) => member.userId.toString() !== myId);
+    await groupRs.save();
+    return res.status(200).json({ success: true, message: "leave group success" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      error: {
+        errorMessage: "Internal Sever Error ",
+      },
+    });
+  }
+};
+
+module.exports.addMembersToGroup = async (req, res) => {
+  try {
+    const { grId } = req.params;
+    const newMembers = req.body;
+
+    const groupRs = await group.findById(grId);
+    if (!groupRs) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    newMembers.map((m) => {
+      groupRs.members.push(m);
+    });
+
+    const result = await groupRs.save();
+    if (result) {
+      const gr = await group.findById(grId).populate("members.userId", "username image");
+      return res.status(200).json({ success: true, message: "Add members success", members: gr.members });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: {
+        errorMessage: "Internal Sever Error ",
+      },
+    });
+  }
+};

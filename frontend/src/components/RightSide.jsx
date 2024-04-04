@@ -5,8 +5,24 @@ import MessageSend from "./MessageSend";
 import FriendInfo from "./FriendInfo";
 
 const RightSide = (props) => {
-  const { currentFriend, newMessage, inputHandle, sendMessage, message, scrollRef, emojiSend, imageSend, members, activeFriends, handleCallVideo, typingMessage, myInfo, friends, setCurrentFriend } =
-    props;
+  const {
+    currentFriend,
+    newMessage,
+    inputHandle,
+    sendMessage,
+    message,
+    scrollRef,
+    emojiSend,
+    imageSend,
+    members,
+    activeFriends,
+    handleCallVideo,
+    typingMessage,
+    myInfo,
+    friends,
+    setCurrentFriend,
+    setModalGroupOpen,
+  } = props;
   return (
     <div className="col-9">
       <div className="right-side">

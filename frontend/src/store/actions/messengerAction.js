@@ -1,10 +1,12 @@
 import axios from "axios";
 import {
+  ADD_MEMBER_TO_GROUP_SUCCESS,
   CREATE_NEW_GROUP_SUCCESS,
   FRIEND_GET_SUCCESS,
   GET_MEMBER_SUCCESS,
   GET_REQUEST_ADD_FRIEND_SUCCESS,
   GROUPS_GET_SUCCESS,
+  LEAVE_GROUP_SUCCESS,
   MESSAGE_GET_SUCCESS,
   MESSAGE_SEND_SUCCESS,
   REMOVE_MEMBER_SUCCESS,
@@ -119,6 +121,20 @@ export const createNewGroup = (data) => {
   };
 };
 
+export const leaveGroup = (grId) => async (dispatch) => {
+  try {
+    const response = await axios.delete(`/api/leave-group/${grId}`);
+    dispatch({
+      type: LEAVE_GROUP_SUCCESS,
+      payload: {
+        message: grId,
+      },
+    });
+  } catch (error) {
+    console.log(error.response.message);
+  }
+};
+
 export const imageMessageSend = (data) => async (dispatch) => {
   try {
     const response = await axios.post(`/api/image-message-send`, data);
@@ -162,6 +178,20 @@ export const removeMember = (groupId, userId) => async (dispatch) => {
       type: REMOVE_MEMBER_SUCCESS,
       payload: {
         message: userId,
+      },
+    });
+  } catch (error) {
+    console.log(error.response.message);
+  }
+};
+
+export const addMembersToGroup = (groupId, newMembersId) => async (dispatch) => {
+  try {
+    const response = await axios.post(`/api/group/${groupId}/add-members`, newMembersId);
+    dispatch({
+      type: ADD_MEMBER_TO_GROUP_SUCCESS,
+      payload: {
+        message: response.data.members,
       },
     });
   } catch (error) {
