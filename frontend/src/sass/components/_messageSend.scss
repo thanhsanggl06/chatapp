@@ -1,9 +1,10 @@
 .message-send-section {
   position: relative;
   display: flex;
-  justify-content: space-between;
+  // justify-content: space-between;
   align-items: center;
   padding: 5px;
+  background-color: white;
   .file {
     display: flex;
     padding: 8px;
@@ -58,7 +59,7 @@
   }
   .message-type {
     display: flex;
-    width: 70%;
+    width: 100%;
     height: 40px;
     background-color: #dfdfdf;
     border-radius: 50px;

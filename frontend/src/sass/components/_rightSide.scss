@@ -18,6 +18,7 @@
             justify-content: space-between;
             padding: 12px 10px;
             border-bottom: 1px solid var(--border-color);
+            background-color: white;
             .image-name {
               display: flex;
               .image {
@@ -60,7 +61,7 @@
                 border-radius: 24px;
                 color: var(--icon-color);
                 cursor: pointer;
-                background-color: var(--icon-bg-color);
+                background-color: white;
                 display: flex;
                 justify-content: center;
                 align-items: center;
