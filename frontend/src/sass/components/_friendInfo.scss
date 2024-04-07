@@ -4,6 +4,7 @@
   justify-content: start;
   height: 100%;
   flex-direction: column;
+  background-color: white;
   .image-name {
     display: flex;
     justify-content: center;
@@ -47,7 +48,7 @@
         cursor: pointer;
         display: flex;
         flex-direction: column;
-        width: 60px;
+        width: 115px;
         align-content: center;
         .icon {
           width: 30px;
@@ -55,9 +56,11 @@
           border-radius: 50%;
           background-color: #dadada;
           font-size: x-large;
+          margin: auto;
         }
         .icon-label {
-          font-size: medium;
+          font-size: 14px;
+          text-align: center;
         }
       }
     }

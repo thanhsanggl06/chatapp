@@ -8,12 +8,12 @@
     display: none;
   }
   .hover-friend.active {
-    background-color: #bbb8b8;
+    background-color: #d9d9d9;
   }
   .hover-friend {
     cursor: pointer;
     &:hover {
-      background-color: #017aff;
+      background-color: #c5e4ff;
     }
     .friend {
       display: flex;
