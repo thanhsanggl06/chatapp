@@ -71,12 +71,15 @@ io.on("connection", (socket) => {
   socket.on("callUser", (data) => {
     const user = findFriend(data.userToCall);
     if (user !== undefined) {
-      io.to(user.socketId).emit("callUser", { signal: data.signalData, from: data.from, name: data.name });
+      io.to(user.socketId).emit("callUser", { signal: data.signalData, from: data.from });
     }
   });
 
   socket.on("answerCall", (data) => {
-    io.to(data.to).emit("callAccepted", data.signal);
+    const user = findFriend(data.to);
+    if (user !== undefined) {
+      io.to(user.socketId).emit("callAccepted", data.signal);
+    }
   });
 
   socket.on("logout", (userId) => {

@@ -17,6 +17,8 @@ import axios from "axios";
 import { ACCEPT_ADD_FRIEND } from "../store/types/messengerType";
 import ProfileInfo from "./ProfileInfo";
 import GroupChatModal from "./GroupChatModal";
+import ReiceiverCall from "./ReiceiverCall";
+import Peer from "simple-peer";
 
 const Messenger = () => {
   const [notificationSPlay] = useSound(notificationSound);
@@ -26,7 +28,17 @@ const Messenger = () => {
   const socket = useRef();
   const alert = useAlert();
 
-  const [isModalOpen, setModalOpen] = useState(false);
+  const [isCalling, setCalling] = useState(false);
+  const [callAccepted, setCallAccepted] = useState(false);
+  const [callerSignal, setCallerSignal] = useState();
+  const [isReceivingCall, setReceivingCall] = useState(false);
+  const [caller, setCaller] = useState();
+  const [stream, setStream] = useState();
+  const myVideo = useRef();
+  const userVideo = useRef();
+  const connectionRef = useRef();
+
+  const [isModalCallOpen, setModalCallOpen] = useState(false);
   const [isModalGroupOpen, setModalGroupOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("tab1");
@@ -343,13 +355,19 @@ const Messenger = () => {
   };
 
   const handleCallVideo = () => {
-    setModalOpen(true);
+    setModalCallOpen(true);
+    setCalling(true);
     // Thêm logic xử lý khi ấn nút call video ở đây
   };
 
   const handleCloseModal = () => {
     setModalGroupOpen(false);
-    setModalOpen(false);
+    setModalCallOpen(false);
+    setCalling(false);
+  };
+
+  const handleCloseReiceiverCallModal = () => {
+    setReceivingCall(false);
   };
 
   const handleOpenProfileInfo = () => {
@@ -524,6 +542,7 @@ const Messenger = () => {
             myInfo={myInfo}
             friends={friends}
             setCurrentFriend={setCurrentFriend}
+            setCalling={setCalling}
           />
         ) : (
           <div className="welcome">
@@ -534,9 +553,10 @@ const Messenger = () => {
           </div>
         )}
       </div>
-      <Call isOpen={isModalOpen} onClose={handleCloseModal}></Call>
+      <Call isOpen={isModalCallOpen} onClose={handleCloseModal} isCalling={isCalling} stream={stream} setStream={setStream} myVideo={myVideo} userVideo={userVideo}></Call>
       <ProfileInfo isOpen={profileOpen} onClose={handleCloseProfileInfo} myInfo={myInfo}></ProfileInfo>
       <GroupChatModal isOpen={isModalGroupOpen} onClose={handleCloseModal}></GroupChatModal>
+      {/* <ReiceiverCall isOpen={isReceivingCall} onClose={handleCloseReiceiverCallModal} answerCall={answerCall} myVideo={myVideo} setStream={setStream}></ReiceiverCall> */}
     </div>
   );
 };

@@ -100,6 +100,7 @@
                 transform: scale(1);
               }
               .search_friend {
+                z-index: 1;
                 overflow: hidden;
                 width: 400px;
                 background-color: rgb(230, 230, 240);
