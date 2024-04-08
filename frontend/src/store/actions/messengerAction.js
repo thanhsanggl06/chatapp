@@ -9,8 +9,10 @@ import {
   LEAVE_GROUP_SUCCESS,
   MESSAGE_GET_SUCCESS,
   MESSAGE_SEND_SUCCESS,
+  RECALL_MESSAGE_SUCCESS,
   REMOVE_MEMBER_SUCCESS,
 } from "../types/messengerType";
+
 
 export const getFriends = (id) => async (dispatch) => {
   try {
@@ -198,3 +200,18 @@ export const addMembersToGroup = (groupId, newMembersId) => async (dispatch) => 
     console.log(error.response.message);
   }
 };
+
+export const recallMessageAction = (message) => async (dispatch) => {
+  try {
+    const response = await axios.post(`/api/recall-message`, message);
+    dispatch({
+      type: RECALL_MESSAGE_SUCCESS,
+      payload: {
+        message: message,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+

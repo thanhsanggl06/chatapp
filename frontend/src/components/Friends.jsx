@@ -21,14 +21,17 @@ const Friends = (props) => {
           </h4>
           <div className="msg-time">
             {msgInfo && msgInfo.senderId === id ? <span>Bạn :</span> : <span></span>}
-            {msgInfo && msgInfo.message?.text ? (
+            {msgInfo.recall ? (
+              <span>Tin nhắn đã thu hồi</span>
+            ) : msgInfo && msgInfo.message?.text ? (
               <span>{msgInfo.message.text.slice(0, 10) + "..."}</span>
             ) : msgInfo && msgInfo.message?.image ? (
               <span>Đã gửi 1 file</span>
             ) : (
               <span>Đã trở thành bạn bè</span>
             )}
-            <span>{msgInfo && msgInfo.message ? moment(msgInfo.createdAt).startOf("mini").fromNow() : ""}</span>
+
+            <span>{msgInfo && msgInfo.message ? "-" + moment(msgInfo.createdAt).startOf("mini").fromNow() : ""}</span>
           </div>
         </div>
         {id === msgInfo?.senderId && fndInfo.username ? (

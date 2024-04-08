@@ -33,6 +33,10 @@ const messageSchema = new Schema(
       type: String,
       default: "unseen",
     },
+    recall: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

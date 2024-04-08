@@ -22,6 +22,7 @@ const RightSide = (props) => {
     friends,
     setCurrentFriend,
     setModalGroupOpen,
+    socket,
   } = props;
   return (
     <div className="col-9">
@@ -57,7 +58,7 @@ const RightSide = (props) => {
                   </div>
                 </div>
               </div>
-              <Message message={message} currentFriend={currentFriend} scrollRef={scrollRef} members={members} typingMessage={typingMessage} />
+              <Message message={message} currentFriend={currentFriend} scrollRef={scrollRef} members={members} typingMessage={typingMessage} socket={socket} />
               <MessageSend newMessage={newMessage} inputHandle={inputHandle} sendMessage={sendMessage} emojiSend={emojiSend} imageSend={imageSend} />
             </div>
           </div>

@@ -14,7 +14,7 @@ import useSound from "use-sound";
 import notificationSound from "../audio/notification.mp3";
 import Call from "./Call";
 import axios from "axios";
-import { ACCEPT_ADD_FRIEND } from "../store/types/messengerType";
+import { ACCEPT_ADD_FRIEND, RECALL_MESSAGE_CURRENT, RECALL_MESSAGE_SOCKET } from "../store/types/messengerType";
 import ProfileInfo from "./ProfileInfo";
 import GroupChatModal from "./GroupChatModal";
 import ReiceiverCall from "./ReiceiverCall";
@@ -66,6 +66,20 @@ const Messenger = () => {
         type: "SEEN_MESSAGE",
         payload: {
           msgInfo: msg,
+        },
+      });
+    });
+
+    socket.current.on("messageRecallResponse", (data) => {
+      let current;
+      if (currentFriend._id === data.senderId) {
+        current = true;
+      }
+      dispatch({
+        type: RECALL_MESSAGE_SOCKET,
+        payload: {
+          current,
+          message: data,
         },
       });
     });
@@ -543,6 +557,7 @@ const Messenger = () => {
             friends={friends}
             setCurrentFriend={setCurrentFriend}
             setCalling={setCalling}
+            socket={socket}
           />
         ) : (
           <div className="welcome">

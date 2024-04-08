@@ -11,6 +11,8 @@ import {
   MESSAGE_GET_SUCCESS,
   MESSAGE_GET_SUCCESS_CLEAR,
   MESSAGE_SEND_SUCCESS,
+  RECALL_MESSAGE_SOCKET,
+  RECALL_MESSAGE_SUCCESS,
   REMOVE_MEMBER_SUCCESS,
   SEEN_MESSAGE,
   SOCKET_MESSAGE,
@@ -132,6 +134,27 @@ export const messengerReducer = (state = messengerState, action) => {
       ...state,
       members: payload.message,
     };
+  }
+  if (type === RECALL_MESSAGE_SUCCESS) {
+    const index = state.message.findIndex((m) => m._id === payload.message._id);
+    state.message[index].recall = true;
+
+    if (index === state.message.length - 1) {
+      const conversationIndex = state.friends.findIndex((c) => c.fndInfo._id === payload.message.receiverId);
+      state.friends[conversationIndex].msgInfo.recall = true;
+    }
+    return { ...state };
+  }
+  if (type === RECALL_MESSAGE_SOCKET) {
+    if (payload.current) {
+      const index = state.message.findIndex((m) => m._id === payload.message._id);
+      state.message[index].recall = true;
+    }
+    const conversationIndex = state.friends.findIndex((c) => c.fndInfo._id === payload.message.senderId);
+    if (state.friends[conversationIndex].msgInfo._id === payload.message._id) {
+      state.friends[conversationIndex].msgInfo.recall = true;
+    }
+    return { ...state };
   }
   if (type === LOGOUT_SUCCESS) {
     return {

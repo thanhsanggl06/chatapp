@@ -447,6 +447,26 @@ module.exports.seenMessage = async (req, res) => {
     });
 };
 
+module.exports.recallMessage = async (req, res) => {
+  const messageId = req.body._id;
+  await messageModel
+    .findByIdAndUpdate(messageId, {
+      recall: true,
+    })
+    .then(() => {
+      res.status(200).json({
+        success: true,
+      });
+    })
+    .catch(() => {
+      res.status(500).json({
+        error: {
+          errorMessage: "Internal Server Error",
+        },
+      });
+    });
+};
+
 module.exports.searchUser = async (req, res) => {
   const myId = req.myId;
 

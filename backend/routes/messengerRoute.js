@@ -17,6 +17,7 @@ const {
   removeMember,
   leaveGroup,
   addMembersToGroup,
+  recallMessage,
 } = require("../controllers/messengerController");
 const { authMiddleware } = require("../middleware/authMiddleware");
 
@@ -28,6 +29,7 @@ router.get("/get-message-group/:id", authMiddleware, getMessageGroup);
 router.get("/get-member-group/:id", authMiddleware, getGroupMembers);
 router.post("/image-message-send", authMiddleware, imageMessageSend);
 router.post("/seen-message", authMiddleware, seenMessage);
+router.post("/recall-message", authMiddleware, recallMessage);
 router.post("/add-friend/:fdId", authMiddleware, addFriend);
 router.post("/accept-friend-request/:fdId", authMiddleware, acceptFriendRequest);
 router.get("/get-requestAddFriends", authMiddleware, getRequestAddFriend);

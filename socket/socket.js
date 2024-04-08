@@ -68,6 +68,13 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("messageRecall", (msg) => {
+    const user = findFriend(msg.receiverId);
+    if (user !== undefined) {
+      socket.to(user.socketId).emit("messageRecallResponse", msg);
+    }
+  });
+
   socket.on("callUser", (data) => {
     const user = findFriend(data.userToCall);
     if (user !== undefined) {
