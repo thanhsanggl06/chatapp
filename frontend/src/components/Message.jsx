@@ -14,8 +14,10 @@ const Message = ({ message, currentFriend, scrollRef, members, typingMessage, so
 
   const recallMessage = (message) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa thu hồi tin nhắn này?")) {
+      const memberIds = members.map((mem) => mem.userId._id).filter((id) => id !== myInfo.id);
       dispatch(recallMessageAction(message));
       message.recall = true;
+      message.memberIds = memberIds;
       socket.current.emit("messageRecall", message);
     }
   };

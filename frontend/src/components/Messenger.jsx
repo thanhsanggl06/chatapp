@@ -45,6 +45,7 @@ const Messenger = () => {
   const [currentFriend, setCurrentFriend] = useState("");
   const [newMessage, setNewMessage] = useState("");
   const [socketMessage, setSocketMessage] = useState("");
+  const [recallMessage, setRecallMessage] = useState("");
   const [typingMessage, setTypingMessage] = useState("");
   const [activeFriends, setActiveFriends] = useState("");
   const [searchUsers, setSearchUsers] = useState("");
@@ -71,19 +72,26 @@ const Messenger = () => {
     });
 
     socket.current.on("messageRecallResponse", (data) => {
-      let current;
-      if (currentFriend._id === data.senderId) {
-        current = true;
-      }
-      dispatch({
-        type: RECALL_MESSAGE_SOCKET,
-        payload: {
-          current,
-          message: data,
-        },
-      });
+      setRecallMessage(data);
     });
   }, []);
+
+  useEffect(() => {
+    let current = false;
+    if (recallMessage.groupId) {
+      if (currentFriend._id === recallMessage.groupId) current = true;
+    } else {
+      if (currentFriend._id === recallMessage.senderId) current = true;
+    }
+
+    dispatch({
+      type: RECALL_MESSAGE_SOCKET,
+      payload: {
+        current: current,
+        message: recallMessage,
+      },
+    });
+  }, [recallMessage]);
 
   const moveFriendToTop = (indexToMoveUp) => {
     if (indexToMoveUp !== -1 && indexToMoveUp !== 0) {

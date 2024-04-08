@@ -136,11 +136,13 @@ export const messengerReducer = (state = messengerState, action) => {
     };
   }
   if (type === RECALL_MESSAGE_SUCCESS) {
+    //find message recall
     const index = state.message.findIndex((m) => m._id === payload.message._id);
     state.message[index].recall = true;
 
+    //last message
     if (index === state.message.length - 1) {
-      const conversationIndex = state.friends.findIndex((c) => c.fndInfo._id === payload.message.receiverId);
+      const conversationIndex = state.friends.findIndex((f) => f.fndInfo._id === payload.message.groupId || f.fndInfo._id === payload.message.receiverId);
       state.friends[conversationIndex].msgInfo.recall = true;
     }
     return { ...state };
@@ -148,11 +150,19 @@ export const messengerReducer = (state = messengerState, action) => {
   if (type === RECALL_MESSAGE_SOCKET) {
     if (payload.current) {
       const index = state.message.findIndex((m) => m._id === payload.message._id);
-      state.message[index].recall = true;
-    }
-    const conversationIndex = state.friends.findIndex((c) => c.fndInfo._id === payload.message.senderId);
-    if (state.friends[conversationIndex].msgInfo._id === payload.message._id) {
-      state.friends[conversationIndex].msgInfo.recall = true;
+      if (index >= 0) state.message[index].recall = true;
+    } else {
+      let conversationIndex;
+      if (payload.message.groupId) {
+        conversationIndex = state.friends.findIndex((f) => f.fndInfo._id === payload.message.groupId);
+      } else if (payload.message.senderId) {
+        conversationIndex = state.friends.findIndex((f) => f.fndInfo._id === payload.message.senderId);
+      }
+      if (conversationIndex >= 0) {
+        if (state.friends[conversationIndex].msgInfo._id === payload.message._id) {
+          state.friends[conversationIndex].msgInfo = payload.message;
+        }
+      }
     }
     return { ...state };
   }

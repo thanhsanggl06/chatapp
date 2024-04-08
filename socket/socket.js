@@ -69,9 +69,20 @@ io.on("connection", (socket) => {
   });
 
   socket.on("messageRecall", (msg) => {
-    const user = findFriend(msg.receiverId);
-    if (user !== undefined) {
-      socket.to(user.socketId).emit("messageRecallResponse", msg);
+    if (msg.groupId) {
+      const membersActive = users.filter((u) => {
+        return msg.memberIds.includes(u.userId);
+      });
+      if (membersActive && membersActive.length > 0) {
+        membersActive.map((ma) => {
+          socket.to(ma.socketId).emit("messageRecallResponse", msg);
+        });
+      }
+    } else {
+      const user = findFriend(msg.receiverId);
+      if (user !== undefined) {
+        socket.to(user.socketId).emit("messageRecallResponse", msg);
+      }
     }
   });
 
