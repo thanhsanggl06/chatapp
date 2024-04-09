@@ -13,7 +13,6 @@ import {
   REMOVE_MEMBER_SUCCESS,
 } from "../types/messengerType";
 
-
 export const getFriends = (id) => async (dispatch) => {
   try {
     const response = await axios.get(`/api/get-friends/${id}`);
@@ -215,3 +214,36 @@ export const recallMessageAction = (message) => async (dispatch) => {
   }
 };
 
+export const disbandTheGroup = (groupId) => async (dispatch) => {
+  try {
+    const response = await axios.delete(`/api/disband-group/${groupId}`);
+    if (response.data.success)
+      dispatch({
+        type: LEAVE_GROUP_SUCCESS,
+        payload: {
+          message: groupId,
+        },
+      });
+    return true;
+  } catch (error) {
+    console.log(error.response.message);
+    return false;
+  }
+};
+
+export const promoteSubAdmin = (groupId, userId) => async (dispatch) => {
+  try {
+    const response = await axios.post(`/api/group/${groupId}/promote-subadmin/${userId}`);
+    if (response.data.success) return true;
+    return false;
+    // dispatch({
+    //   type: LEAVE_GROUP_SUCCESS,
+    //   payload: {
+    //     message: groupId,
+    //   },
+    // });
+  } catch (error) {
+    console.log(error.response.message);
+    return false;
+  }
+};

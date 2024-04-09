@@ -30,13 +30,36 @@ const messengerState = {
   requestAddFriend: [],
 };
 
+const mergeUniqueFriends = (arr1, arr2) => {
+  // Tạo một Map để lưu trữ các đối tượng theo id
+  let map = new Map();
+
+  // Đưa các đối tượng từ arr1 vào map
+  arr1.forEach((obj) => map.set(obj.fndInfo._id, obj));
+
+  // Lặp qua các đối tượng từ arr2
+  arr2.forEach((obj) => {
+    // Nếu không có đối tượng nào trong map có cùng id, thêm vào map
+    if (!map.has(obj.fndInfo._id)) {
+      map.set(obj.fndInfo._id, obj);
+    }
+  });
+
+  // Chuyển đổi map thành mảng các đối tượng
+  let mergedArray = Array.from(map.values());
+
+  return mergedArray;
+};
+
 export const messengerReducer = (state = messengerState, action) => {
   const { type, payload } = action;
 
   if (type === FRIEND_GET_SUCCESS) {
+    const newList = mergeUniqueFriends(state.friends, payload.friends).sort((a, b) => new Date(b.msgInfo.createdAt) - new Date(a.msgInfo.createdAt));
+
     return {
       ...state,
-      friends: [...state.friends, ...payload.friends].sort((a, b) => new Date(b.msgInfo.createdAt) - new Date(a.msgInfo.createdAt)),
+      friends: newList,
     };
   }
   if (type === MESSAGE_GET_SUCCESS) {
@@ -54,10 +77,11 @@ export const messengerReducer = (state = messengerState, action) => {
     };
   }
   if (type === GROUPS_GET_SUCCESS) {
+    const newList = mergeUniqueFriends(state.friends, payload.groups).sort((a, b) => new Date(b.msgInfo.createdAt) - new Date(a.msgInfo.createdAt));
     return {
       ...state,
       groups: payload.groups,
-      friends: [...state.friends, ...payload.groups].sort((a, b) => new Date(b.msgInfo.createdAt) - new Date(a.msgInfo.createdAt)),
+      friends: newList,
     };
   }
   if (type === GET_MEMBER_SUCCESS) {

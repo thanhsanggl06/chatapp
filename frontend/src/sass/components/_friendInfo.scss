@@ -58,6 +58,9 @@
           font-size: x-large;
           margin: auto;
         }
+        .red {
+          color: red;
+        }
         .icon-label {
           font-size: 14px;
           text-align: center;
@@ -135,7 +138,8 @@
       }
       .action {
         .action-icon {
-          font-size: large;
+          font-size: x-large;
+          margin: 0 2px;
           cursor: pointer;
         }
       }

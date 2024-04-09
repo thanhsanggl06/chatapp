@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { FaCaretSquareDown } from "react-icons/fa";
 import { IoIosRemoveCircleOutline, IoMdPersonAdd } from "react-icons/io";
-import { CiLogout } from "react-icons/ci";
+import { GrUserAdmin } from "react-icons/gr";
+import { CiLogout, CiSquareRemove } from "react-icons/ci";
 import { AiFillMessage } from "react-icons/ai";
 import { useAlert } from "react-alert";
 import { useDispatch } from "react-redux";
-import { leaveGroup, removeMember } from "../store/actions/messengerAction";
+import { disbandTheGroup, leaveGroup, removeMember, promoteSubAdmin } from "../store/actions/messengerAction";
 import AddMemberModal from "./AddMemberModal";
 
 const FriendInfo = (props) => {
@@ -19,6 +20,7 @@ const FriendInfo = (props) => {
 
   const { currentFriend, activeFriends, members, myInfo, friends, setCurrentFriend } = props;
   const admin = members.find((m) => m.role === "admin");
+  const admins = members.filter((m) => m.role === "admin" || m.role === "subadmin").map((m) => m.userId._id);
   const friendIds = friends.map((f) => f.fndInfo._id);
   const deleteMember = async (userId) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa thành viên này?")) {
@@ -39,6 +41,38 @@ const FriendInfo = (props) => {
         alert.success("Rời nhóm thành công!");
       } catch (error) {
         alert.error("Rời nhóm không thành công!");
+      }
+    }
+  };
+
+  const disbandGroup = async () => {
+    if (window.confirm("Bạn có chắc chắn muốn giải tán nhóm?")) {
+      try {
+        const rs = await dispatch(disbandTheGroup(currentFriend._id));
+        if (rs) {
+          setCurrentFriend("");
+          alert.success("Giải tán nhóm thành công!");
+        } else {
+          alert.error("Giải tán nhóm không thành công!");
+        }
+      } catch (error) {
+        alert.error("Giải tán nhóm không thành công!");
+      }
+    }
+  };
+
+  const promoteMemberToSubAdmin = async (user) => {
+    if (window.confirm(`Bạn có chắc chắn muốn cấp quyền phó nhóm cho ${user.username}?`)) {
+      try {
+        const rs = await dispatch(promoteSubAdmin(currentFriend._id, user._id));
+        if (rs) {
+          setCurrentFriend("");
+          alert.success("Cấp quyền thành công");
+        } else {
+          alert.error("Cấp quyền không thành công!");
+        }
+      } catch (error) {
+        alert.error("Giải tán nhóm không thành công!");
       }
     }
   };
@@ -70,6 +104,12 @@ const FriendInfo = (props) => {
               <CiLogout className="icon" />
               <span className="icon-label">Rời nhóm</span>
             </div>
+            {myInfo.id === admin?.userId._id && (
+              <div className="icon-action">
+                <CiSquareRemove className="icon red" onClick={disbandGroup} />
+                <span className="icon-label">Giải tán nhóm</span>
+              </div>
+            )}
           </div>
         )}
 
@@ -104,11 +144,21 @@ const FriendInfo = (props) => {
                   </div>
                   <div className="name">
                     <h3>{u.userId.username}</h3>
+                    {u.userId._id === admin.userId._id ? <h5> - Trưởng nhóm</h5> : admins.includes(u.userId._id) && <h5> - Phó nhóm</h5>}
                   </div>
                 </div>
                 <div className="action">
+                  {myInfo.id === admin.userId._id && myInfo.id !== u.userId._id && !admins.includes(u.userId._id) ? (
+                    <GrUserAdmin className="action-icon" onClick={() => promoteMemberToSubAdmin(u.userId)} />
+                  ) : (
+                    ""
+                  )}
                   {myInfo.id !== u.userId._id && friendIds.includes(u.userId._id) ? <AiFillMessage className="action-icon" onClick={() => setCurrentFriend(u.userId)} /> : ""}
-                  {myInfo.id === admin.userId._id && myInfo.id !== u.userId._id ? <IoIosRemoveCircleOutline className="action-icon" onClick={() => deleteMember(u.userId._id)} /> : ""}
+                  {admins.includes(myInfo.id) && myInfo.id !== u.userId._id && admin.userId._id !== u.userId._id ? (
+                    <IoIosRemoveCircleOutline className="action-icon" onClick={() => deleteMember(u.userId._id)} />
+                  ) : (
+                    ""
+                  )}
                 </div>
               </div>
             ))}

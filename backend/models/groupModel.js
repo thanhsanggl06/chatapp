@@ -11,7 +11,7 @@ const groupSchema = new Schema(
         {
           _id: false,
           userId: { type: Schema.Types.ObjectId, ref: "user" },
-          role: { type: String, enum: ["admin", "member"], default: "member" },
+          role: { type: String, enum: ["admin", "member", "subadmin"], default: "member" },
         },
       ],
     },

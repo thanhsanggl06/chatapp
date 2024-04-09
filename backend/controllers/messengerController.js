@@ -532,7 +532,7 @@ module.exports.addFriend = async (req, res) => {
 
     const response = await user.addFriend(fdId);
 
-    res.status(200).json({ response });
+    res.status(200).json({ success: true, response });
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -656,6 +656,69 @@ module.exports.addMembersToGroup = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({
+      error: {
+        errorMessage: "Internal Sever Error ",
+      },
+    });
+  }
+};
+
+module.exports.disbandGroup = async (req, res) => {
+  try {
+    const { grId } = req.params;
+    const myId = req.myId;
+
+    const groupRs = await group.findById(grId);
+    if (!groupRs) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    const adminRole = groupRs.members.filter((m) => m.role === "admin").map((m) => m.userId.toString());
+    if (adminRole.includes(myId)) {
+      await group.findByIdAndDelete(grId);
+      return res.status(200).json({ success: true, message: "Disband group success" });
+    } else {
+      return res.status(403).json({ success: false, message: "Not enough permissions" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      error: {
+        errorMessage: "Internal Sever Error ",
+      },
+    });
+  }
+};
+
+module.exports.promoteToSubAdmin = async (req, res) => {
+  try {
+    const { grId, userId } = req.params;
+    const myId = req.myId;
+
+    const groupRs = await group.findById(grId);
+    if (!groupRs) {
+      return res.status(404).json({ success: false, message: "Group not found" });
+    }
+
+    const adminRole = groupRs.members.filter((m) => m.role === "admin").map((m) => m.userId.toString());
+
+    if (adminRole.includes(myId)) {
+      const index = groupRs.members.findIndex((m) => m.userId.toString() === userId);
+      if (index >= 0) {
+        groupRs.members[index].role = "subadmin";
+      } else {
+        return res.status(400).json({ success: false, message: "Member does not exist in the group" });
+      }
+      await groupRs.save();
+      return res.status(200).json({ success: true, message: "Promote member to subadmin success" });
+    } else {
+      return res.status(403).json({ success: false, message: "Not enough permissions" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
       error: {
         errorMessage: "Internal Sever Error ",
       },

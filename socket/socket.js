@@ -50,6 +50,13 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("addFriend", (data) => {
+    const user = findFriend(data.fdId);
+    if (user !== undefined) {
+      socket.to(user.socketId).emit("requestAddFriend", data.senderName);
+    }
+  });
+
   socket.on("typingMessage", (data) => {
     const user = findFriend(data.receiverId);
     if (user !== undefined) {

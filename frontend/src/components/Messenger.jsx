@@ -19,6 +19,7 @@ import ProfileInfo from "./ProfileInfo";
 import GroupChatModal from "./GroupChatModal";
 import ReiceiverCall from "./ReiceiverCall";
 import Peer from "simple-peer";
+import { FaD } from "react-icons/fa6";
 
 const Messenger = () => {
   const [notificationSPlay] = useSound(notificationSound);
@@ -46,6 +47,7 @@ const Messenger = () => {
   const [newMessage, setNewMessage] = useState("");
   const [socketMessage, setSocketMessage] = useState("");
   const [recallMessage, setRecallMessage] = useState("");
+  const [newRequest, setNewRequest] = useState(false);
   const [typingMessage, setTypingMessage] = useState("");
   const [activeFriends, setActiveFriends] = useState("");
   const [searchUsers, setSearchUsers] = useState("");
@@ -73,6 +75,12 @@ const Messenger = () => {
 
     socket.current.on("messageRecallResponse", (data) => {
       setRecallMessage(data);
+    });
+
+    socket.current.on("requestAddFriend", (senderName) => {
+      notificationSPlay();
+      toast.success(`${senderName} vừa gửi lời mời kết bạn.`);
+      setNewRequest(true);
     });
   }, []);
 
@@ -157,6 +165,13 @@ const Messenger = () => {
     // socket.current.emit("addUser", myInfo.id, myInfo);
     dispatch(getRequestAddFriends());
   }, []);
+
+  useEffect(() => {
+    if (newRequest) {
+      dispatch(getRequestAddFriends());
+      setNewRequest(false);
+    }
+  }, [newRequest]);
 
   useEffect(() => {
     socket.current.emit("addUser", myInfo.id, myInfo);
@@ -342,6 +357,9 @@ const Messenger = () => {
   const addFriend = async (fdId) => {
     try {
       const response = await axios.post(`/api/add-friend/${fdId}`);
+      if (response.data.success) {
+        socket.current.emit("addFriend", { senderName: myInfo.username, fdId });
+      }
       const index = searchUsers.findIndex((u) => u._id === fdId);
       searchUsers[index].statusFriend = "request";
       setSearchUsers(JSON.parse(JSON.stringify(searchUsers)));
@@ -471,7 +489,7 @@ const Messenger = () => {
                                     {u.statusFriend === "none" ? (
                                       <button onClick={() => addFriend(u._id)}>Kết bạn</button>
                                     ) : u.statusFriend === "pending" ? (
-                                      <button onClick={() => acceptRequestFriend(u._id)}>Kết bạn</button>
+                                      <button onClick={() => acceptRequestFriend(u._id)}>Chấp nhận</button>
                                     ) : (
                                       ""
                                     )}

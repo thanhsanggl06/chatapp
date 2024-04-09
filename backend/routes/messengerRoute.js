@@ -18,6 +18,8 @@ const {
   leaveGroup,
   addMembersToGroup,
   recallMessage,
+  disbandGroup,
+  promoteToSubAdmin,
 } = require("../controllers/messengerController");
 const { authMiddleware } = require("../middleware/authMiddleware");
 
@@ -38,5 +40,7 @@ router.post("/create-new-group", authMiddleware, createNewGroup);
 router.delete("/group/:grId/remove-member/:userId", authMiddleware, removeMember);
 router.delete("/leave-group/:grId", authMiddleware, leaveGroup);
 router.post("/group/:grId/add-members", authMiddleware, addMembersToGroup);
+router.post("/group/:grId/promote-subadmin/:userId", authMiddleware, promoteToSubAdmin);
+router.delete("/disband-group/:grId", authMiddleware, disbandGroup);
 
 module.exports = router;
