@@ -1,6 +1,7 @@
 import { LOGOUT_SUCCESS } from "../types/authType";
 import {
   ACCEPT_ADD_FRIEND,
+  ACCEPT_ADD_FRIEND_SOCKET,
   ADD_MEMBER_TO_GROUP_SUCCESS,
   CREATE_NEW_GROUP_SUCCESS,
   FRIEND_GET_SUCCESS,
@@ -11,6 +12,7 @@ import {
   MESSAGE_GET_SUCCESS,
   MESSAGE_GET_SUCCESS_CLEAR,
   MESSAGE_SEND_SUCCESS,
+  PROMOTE_SUCCESS,
   RECALL_MESSAGE_SOCKET,
   RECALL_MESSAGE_SUCCESS,
   REMOVE_MEMBER_SUCCESS,
@@ -130,9 +132,20 @@ export const messengerReducer = (state = messengerState, action) => {
     };
   }
   if (type === ACCEPT_ADD_FRIEND) {
+    const newFriend = [{ fndInfo: payload, msgInfo: { createdAt: Date.now() } }];
+    const newList = mergeUniqueFriends(state.friends, newFriend).sort((a, b) => new Date(b.msgInfo.createdAt) - new Date(a.msgInfo.createdAt));
     return {
       ...state,
-      requestAddFriend: payload,
+      friends: newList,
+      requestAddFriend: state.requestAddFriend.filter((u) => u._id !== payload._id),
+    };
+  }
+
+  if (type === ACCEPT_ADD_FRIEND_SOCKET) {
+    const newList = mergeUniqueFriends(state.friends, [payload]).sort((a, b) => new Date(b.msgInfo.createdAt) - new Date(a.msgInfo.createdAt));
+    return {
+      ...state,
+      friends: newList,
     };
   }
   if (type === CREATE_NEW_GROUP_SUCCESS) {
@@ -189,6 +202,16 @@ export const messengerReducer = (state = messengerState, action) => {
       }
     }
     return { ...state };
+  }
+  if (type === PROMOTE_SUCCESS) {
+    const index = state.members.findIndex((m) => m.userId._id === payload.message);
+    if (index >= 0) {
+      state.members[index].role = "subadmin";
+    }
+    console.log(state.members);
+    return {
+      ...state,
+    };
   }
   if (type === LOGOUT_SUCCESS) {
     return {

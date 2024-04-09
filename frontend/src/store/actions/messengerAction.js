@@ -9,6 +9,7 @@ import {
   LEAVE_GROUP_SUCCESS,
   MESSAGE_GET_SUCCESS,
   MESSAGE_SEND_SUCCESS,
+  PROMOTE_SUCCESS,
   RECALL_MESSAGE_SUCCESS,
   REMOVE_MEMBER_SUCCESS,
 } from "../types/messengerType";
@@ -234,14 +235,14 @@ export const disbandTheGroup = (groupId) => async (dispatch) => {
 export const promoteSubAdmin = (groupId, userId) => async (dispatch) => {
   try {
     const response = await axios.post(`/api/group/${groupId}/promote-subadmin/${userId}`);
-    if (response.data.success) return true;
-    return false;
-    // dispatch({
-    //   type: LEAVE_GROUP_SUCCESS,
-    //   payload: {
-    //     message: groupId,
-    //   },
-    // });
+    if (response.data.success)
+      dispatch({
+        type: PROMOTE_SUCCESS,
+        payload: {
+          message: userId,
+        },
+      });
+    return true;
   } catch (error) {
     console.log(error.response.message);
     return false;

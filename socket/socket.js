@@ -57,6 +57,13 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("acceptFriend", (data) => {
+    const user = findFriend(data.to);
+    if (user !== undefined) {
+      socket.to(user.socketId).emit("acceptFriendResponse", data.friend);
+    }
+  });
+
   socket.on("typingMessage", (data) => {
     const user = findFriend(data.receiverId);
     if (user !== undefined) {

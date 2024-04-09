@@ -66,7 +66,6 @@ const FriendInfo = (props) => {
       try {
         const rs = await dispatch(promoteSubAdmin(currentFriend._id, user._id));
         if (rs) {
-          setCurrentFriend("");
           alert.success("Cấp quyền thành công");
         } else {
           alert.error("Cấp quyền không thành công!");

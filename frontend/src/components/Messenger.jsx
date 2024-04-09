@@ -14,7 +14,7 @@ import useSound from "use-sound";
 import notificationSound from "../audio/notification.mp3";
 import Call from "./Call";
 import axios from "axios";
-import { ACCEPT_ADD_FRIEND, RECALL_MESSAGE_CURRENT, RECALL_MESSAGE_SOCKET } from "../store/types/messengerType";
+import { ACCEPT_ADD_FRIEND, ACCEPT_ADD_FRIEND_SOCKET, RECALL_MESSAGE_CURRENT, RECALL_MESSAGE_SOCKET } from "../store/types/messengerType";
 import ProfileInfo from "./ProfileInfo";
 import GroupChatModal from "./GroupChatModal";
 import ReiceiverCall from "./ReiceiverCall";
@@ -75,6 +75,13 @@ const Messenger = () => {
 
     socket.current.on("messageRecallResponse", (data) => {
       setRecallMessage(data);
+    });
+
+    socket.current.on("acceptFriendResponse", (data) => {
+      dispatch({
+        type: ACCEPT_ADD_FRIEND_SOCKET,
+        payload: data,
+      });
     });
 
     socket.current.on("requestAddFriend", (senderName) => {
@@ -368,13 +375,13 @@ const Messenger = () => {
     }
   };
 
-  const acceptRequestFriend = async (fdId) => {
+  const acceptRequestFriend = async (user) => {
     try {
-      const response = await axios.post(`/api/accept-friend-request/${fdId}`);
+      const response = await axios.post(`/api/accept-friend-request/${user._id}`);
       console.log(response);
       let index;
       if (searchUsers && searchUsers.length > 0) {
-        index = searchUsers.findIndex((u) => u._id === fdId);
+        index = searchUsers.findIndex((u) => u._id === user._id);
       }
       if (index && index !== -1) {
         searchUsers[index].statusFriend = "accepted";
@@ -383,8 +390,16 @@ const Messenger = () => {
 
       dispatch({
         type: ACCEPT_ADD_FRIEND,
-        payload: requestAddFriend.filter((u) => u._id !== fdId),
+        payload: user,
       });
+      const data = {
+        to: user._id,
+        friend: {
+          fndInfo: { _id: myInfo.id, username: myInfo.username, email: myInfo.email, image: myInfo.image },
+          msgInfo: { createdAt: Date.now() },
+        },
+      };
+      socket.current.emit("acceptFriend", data);
     } catch (error) {
       console.log(error);
     }
@@ -489,7 +504,7 @@ const Messenger = () => {
                                     {u.statusFriend === "none" ? (
                                       <button onClick={() => addFriend(u._id)}>Kết bạn</button>
                                     ) : u.statusFriend === "pending" ? (
-                                      <button onClick={() => acceptRequestFriend(u._id)}>Chấp nhận</button>
+                                      <button onClick={() => acceptRequestFriend(u)}>Chấp nhận</button>
                                     ) : (
                                       ""
                                     )}
@@ -517,7 +532,7 @@ const Messenger = () => {
                                     </div>
                                   </div>
                                   <div className="add-friend">
-                                    <button onClick={() => acceptRequestFriend(u._id)}>Chấp nhận</button>
+                                    <button onClick={() => acceptRequestFriend(u)}>Chấp nhận</button>
                                   </div>
                                 </div>
                               ))}
