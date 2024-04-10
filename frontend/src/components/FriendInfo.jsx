@@ -60,8 +60,10 @@ const FriendInfo = (props) => {
       try {
         const rs = await dispatch(disbandTheGroup(currentFriend._id));
         if (rs) {
+          const otherMembersId = members.map((m) => ({ userId: m.userId._id })).filter((obj) => obj.userId !== myInfo.id);
           setCurrentFriend("");
           alert.success("Giải tán nhóm thành công!");
+          socket.current.emit("groupEvent", { removeMember: true, newMembers: otherMembersId, groupId: currentFriend._id });
         } else {
           alert.error("Giải tán nhóm không thành công!");
         }

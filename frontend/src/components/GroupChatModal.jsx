@@ -50,7 +50,7 @@ const GroupChatModal = ({ isOpen, onClose, socket }) => {
     setGroupName("");
     onClose();
     if (rs) {
-      socket.current.emit("groupEvent", members);
+      socket.current.emit("groupEvent", { newMembers: members });
       alert.success("Tạo nhóm thành công!");
     }
   };
