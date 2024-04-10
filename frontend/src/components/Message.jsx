@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
 import { FaRegCheckCircle } from "react-icons/fa";
@@ -6,12 +6,25 @@ import "moment/locale/vi";
 import Thumbnail from "./Thumbnail";
 import { TbMessageCircleOff } from "react-icons/tb";
 import { AiOutlineDelete } from "react-icons/ai";
+import { PiShareFatLight } from "react-icons/pi";
 import { deleteMessageAction, recallMessageAction } from "../store/actions/messengerAction";
+import ForwardMessageModal from "./ForwardMessageModal";
 
-const Message = ({ message, currentFriend, scrollRef, members, typingMessage, socket }) => {
+const Message = ({ message, currentFriend, scrollRef, members, typingMessage, socket, friends, forwardMessage }) => {
   const { myInfo } = useSelector((state) => state.auth);
   const imageRegex = /\.(jpg|jpeg|png|gif|bmp)$/;
   const dispatch = useDispatch();
+  const [isModalForwardOpen, setModalForwardOpen] = useState(false);
+  const [messageForward, setMessageForward] = useState("");
+
+  const handleCloseForwardModal = () => {
+    setModalForwardOpen(false);
+  };
+
+  const openForwardModal = (message) => {
+    setModalForwardOpen(true);
+    setMessageForward(message);
+  };
 
   const recallMessage = (message) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa thu hồi tin nhắn này?")) {
@@ -56,6 +69,7 @@ const Message = ({ message, currentFriend, scrollRef, members, typingMessage, so
                           )}
                           <div className="time">{moment(m.createdAt).format("HH:mm")} </div>
                           <div className="more">
+                            <PiShareFatLight className="icon" onClick={() => openForwardModal(m)} />
                             <AiOutlineDelete className="icon" onClick={() => deleteMessage(m)} />
                             <TbMessageCircleOff className="icon" onClick={() => recallMessage(m)} />
                           </div>
@@ -140,6 +154,14 @@ const Message = ({ message, currentFriend, scrollRef, members, typingMessage, so
       ) : (
         ""
       )}
+      <ForwardMessageModal
+        isOpen={isModalForwardOpen}
+        onClose={handleCloseForwardModal}
+        friends={friends}
+        messageForward={messageForward}
+        currentFriend={currentFriend}
+        forwardMessage={forwardMessage}
+      />
     </>
   );
 };

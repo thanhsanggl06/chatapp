@@ -5,7 +5,18 @@ import ActiveFriend from "./ActiveFriend";
 import Friends from "./Friends";
 import RightSide from "./RightSide";
 import { useDispatch, useSelector } from "react-redux";
-import { getFriends, messageSend, getMessage, imageMessageSend, getGroups, getMessageGroup, getGroupMembers, seenMessage, getRequestAddFriends } from "../store/actions/messengerAction";
+import {
+  getFriends,
+  messageSend,
+  getMessage,
+  imageMessageSend,
+  getGroups,
+  getMessageGroup,
+  getGroupMembers,
+  seenMessage,
+  getRequestAddFriends,
+  forwardMessageAction,
+} from "../store/actions/messengerAction";
 import { userLogout } from "../store/actions/authAction";
 import { io } from "socket.io-client";
 import { useAlert } from "react-alert";
@@ -273,6 +284,55 @@ const Messenger = () => {
     });
     dispatch(messageSend(data));
     setNewMessage("");
+  };
+
+  const forwardMessage = async (listFw, msg) => {
+    for (const fd of listFw) {
+      let data;
+      if (fd.username) {
+        data = {
+          senderName: myInfo.username,
+          receiverId: fd._id,
+          message: msg.message,
+        };
+      } else {
+        data = {
+          senderName: myInfo.username,
+          groupId: fd._id,
+          message: msg.message,
+        };
+      }
+
+      const rs = await dispatch(forwardMessageAction(data));
+      if (rs !== false) {
+        let datart = rs;
+        if (fd.name) {
+          const getMemberSuccess = await dispatch(getGroupMembers(fd._id));
+          let memberIds;
+          if (getMemberSuccess) {
+            memberIds = members.map((mem) => mem.userId._id).filter((id) => id !== myInfo.id);
+          }
+          datart = {
+            ...datart,
+            memberIds,
+          };
+        }
+        socket.current.emit("sendMessage", datart);
+        const indexToMoveUp = friends.findIndex((con) => con.fndInfo._id === fd._id);
+        moveFriendToTop(indexToMoveUp);
+        friends[0].msgInfo = rs;
+        dispatch({
+          type: "SOCKET_MESSAGE_NEW",
+          payload: {
+            friends: friends,
+          },
+        });
+      }
+    }
+    //back to member default of group
+    if (currentFriend.name) {
+      dispatch(getGroupMembers(currentFriend._id));
+    }
   };
 
   const emojiSend = (e) => {
@@ -644,6 +704,7 @@ const Messenger = () => {
             setCurrentFriend={setCurrentFriend}
             setCalling={setCalling}
             socket={socket}
+            forwardMessage={forwardMessage}
           />
         ) : (
           <div className="welcome">

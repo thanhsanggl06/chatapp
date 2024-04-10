@@ -190,25 +190,31 @@ export const messengerReducer = (state = messengerState, action) => {
     //find message delete
     const index = state.message.findIndex((m) => m._id === payload.message._id);
     if (index >= 0) state.message[index].deletedBy = [payload.deletedBy];
+    // if deleted message is last message
+    if (index === state.message.length - 1) {
+      const conversationIndex = state.friends.findIndex((f) => f.fndInfo._id === payload.message.groupId || f.fndInfo._id === payload.message.receiverId);
+      state.friends[conversationIndex].msgInfo.deletedBy = [payload.deletedBy];
+    }
     return { ...state };
   }
   if (type === RECALL_MESSAGE_SOCKET) {
     if (payload.current) {
       const index = state.message.findIndex((m) => m._id === payload.message._id);
-      if (index >= 0) state.message[index].recall = true;
-    } else {
-      let conversationIndex;
-      if (payload.message.groupId) {
-        conversationIndex = state.friends.findIndex((f) => f.fndInfo._id === payload.message.groupId);
-      } else if (payload.message.senderId) {
-        conversationIndex = state.friends.findIndex((f) => f.fndInfo._id === payload.message.senderId);
-      }
-      if (conversationIndex >= 0) {
-        if (state.friends[conversationIndex].msgInfo._id === payload.message._id) {
-          state.friends[conversationIndex].msgInfo = payload.message;
-        }
+      if (index >= 0) state.message[index].recall = true; //set current message recall realtime
+    }
+    let conversationIndex;
+    if (payload.message.groupId) {
+      conversationIndex = state.friends.findIndex((f) => f.fndInfo._id === payload.message.groupId);
+    } else if (payload.message.senderId) {
+      conversationIndex = state.friends.findIndex((f) => f.fndInfo._id === payload.message.senderId);
+    }
+    if (conversationIndex >= 0) {
+      // if message recall is  last message
+      if (state.friends[conversationIndex].msgInfo._id === payload.message._id) {
+        state.friends[conversationIndex].msgInfo.recall = true;
       }
     }
+
     return { ...state };
   }
   if (type === PROMOTE_SUCCESS) {

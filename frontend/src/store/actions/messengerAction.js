@@ -8,6 +8,7 @@ import {
   GET_REQUEST_ADD_FRIEND_SUCCESS,
   GROUPS_GET_SUCCESS,
   LEAVE_GROUP_SUCCESS,
+  MESSAGE_FORWARD_SUCCESS,
   MESSAGE_GET_SUCCESS,
   MESSAGE_SEND_SUCCESS,
   PROMOTE_SUCCESS,
@@ -52,8 +53,11 @@ export const getGroupMembers = (id) => async (dispatch) => {
         members: response.data.members,
       },
     });
+    if (response.data.success) return true;
+    return false;
   } catch (error) {
     console.log(error.response.data);
+    return false;
   }
 };
 
@@ -68,6 +72,16 @@ export const messageSend = (data) => async (dispatch) => {
     });
   } catch (error) {
     console.log(error.response.data);
+  }
+};
+
+export const forwardMessageAction = (data) => async (dispatch) => {
+  try {
+    const response = await axios.post("/api/forward-message", data);
+    return response.data.message;
+  } catch (error) {
+    console.log(error.response.data);
+    return false;
   }
 };
 
@@ -219,14 +233,19 @@ export const addMembersToGroup = (groupId, newMembersId) => async (dispatch) => 
 export const recallMessageAction = (message) => async (dispatch) => {
   try {
     const response = await axios.post(`/api/recall-message`, message);
-    dispatch({
-      type: RECALL_MESSAGE_SUCCESS,
-      payload: {
-        message: message,
-      },
-    });
+    if (response.data.success) {
+      dispatch({
+        type: RECALL_MESSAGE_SUCCESS,
+        payload: {
+          message: message,
+        },
+      });
+      return true;
+    }
+    return false;
   } catch (error) {
     console.log(error);
+    return false;
   }
 };
 

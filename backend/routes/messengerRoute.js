@@ -21,6 +21,7 @@ const {
   disbandGroup,
   promoteToSubAdmin,
   deleteMessage,
+  messageForwardSave,
 } = require("../controllers/messengerController");
 const { authMiddleware } = require("../middleware/authMiddleware");
 
@@ -44,5 +45,6 @@ router.post("/group/:grId/add-members", authMiddleware, addMembersToGroup);
 router.post("/group/:grId/promote-subadmin/:userId", authMiddleware, promoteToSubAdmin);
 router.delete("/disband-group/:grId", authMiddleware, disbandGroup);
 router.post("/delete-message", authMiddleware, deleteMessage);
+router.post("/forward-message", authMiddleware, messageForwardSave);
 
 module.exports = router;

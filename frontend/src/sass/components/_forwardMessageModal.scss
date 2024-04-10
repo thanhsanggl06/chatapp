@@ -1,0 +1,196 @@
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.modal-content-group {
+  background-color: #fefefe;
+  margin: 1% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 30%;
+  height: 90%;
+  .modal-header {
+    width: 100%;
+    height: 5%;
+    border-bottom: 1px solid #333;
+  }
+  .modal-body {
+    width: 100%;
+    height: 85%;
+    .info-group {
+      display: flex;
+      width: 100%;
+      height: 40px;
+      background-color: var(--search-bg);
+      border-radius: 50px;
+      margin: 20px 0px;
+      .avatar-group {
+        width: 40px;
+        border-radius: 50%;
+        height: 40px;
+        object-fit: contain;
+        background-color: transparent;
+        border: 0 #fefefe;
+        margin-right: 10px;
+      }
+      .form-control {
+        width: 100%;
+        padding-left: 0px;
+        border-bottom-right-radius: 50px;
+        border-top-right-radius: 50pc;
+        background-color: #fff0;
+        border: none;
+        color: var(--text-color);
+        &::placeholder {
+          color: var(--text-color);
+        }
+      }
+    }
+    .search {
+      display: flex;
+      width: 100%;
+      height: 40px;
+      background-color: var(--search-bg);
+      border-radius: 50px;
+      margin: 20px 0px;
+      button {
+        padding: 12px;
+        border-bottom-left-radius: 50px;
+        border-top-left-radius: 50px;
+        border: none;
+        color: var(--text-color);
+        font-size: 20px;
+        background-color: transparent;
+      }
+      .form-control {
+        width: 100%;
+        padding-left: 0px;
+        border-bottom-right-radius: 50px;
+        border-top-right-radius: 50pc;
+        background-color: #fff0;
+        border: none;
+        color: var(--text-color);
+        &::placeholder {
+          color: var(--text-color);
+        }
+      }
+    }
+    .selected_users {
+      width: 100%;
+      max-height: 120px;
+      overflow-y: auto;
+      display: flex;
+      flex-wrap: wrap;
+
+      .user {
+        width: 90px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        align-content: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2px;
+        margin: 5px;
+        background-color: #a0dff8;
+        border-radius: 5px;
+        position: relative;
+        .badge_remove {
+          position: absolute;
+          top: -5%;
+          right: -5%;
+          cursor: pointer;
+        }
+        .badge_remove:hover {
+          color: red;
+        }
+        .avatar {
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+        }
+        .name {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          display: inline-block;
+          max-width: 100%;
+        }
+      }
+    }
+    .content-forward {
+      .content-image,
+      .content-video,
+      .content-text {
+        width: 100%;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        img {
+          height: 100%;
+          object-fit: cover;
+        }
+        video {
+          width: 100px;
+          height: 100%;
+        }
+        .file-icon {
+          width: 50%;
+          height: 100%;
+        }
+        .file-name {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          overflow-wrap: break-word; /* Xuống dòng khi không đủ chỗ */
+          width: 100%;
+        }
+      }
+    }
+  }
+  .modal-footer {
+    width: 100%;
+    height: 10%;
+  }
+}
+
+.select-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: black;
+}
+
+.open {
+  display: block;
+}
+
+.is_member {
+  background-color: #ccc;
+  border-radius: 5px;
+  padding-left: 15px;
+  border: 1px solid;
+}

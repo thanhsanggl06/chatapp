@@ -187,6 +187,8 @@
 }
 
 .search_results {
+  max-height: 400px;
+  overflow-y: auto;
   .user {
     display: flex;
     justify-content: space-between;

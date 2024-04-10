@@ -263,6 +263,42 @@ module.exports.messageUploadDB = async (req, res) => {
   }
 };
 
+module.exports.messageForwardSave = async (req, res) => {
+  const { senderName, receiverId, message, groupId } = req.body;
+  const senderId = req.myId;
+  try {
+    let newMessage;
+    if (receiverId) {
+      newMessage = {
+        senderId: senderId,
+        senderName: senderName,
+        receiverId: receiverId,
+        message: message,
+      };
+    } else {
+      newMessage = {
+        senderId: senderId,
+        senderName: senderName,
+        groupId: groupId,
+        message: message,
+      };
+    }
+
+    const insertMessage = await messageModel.create(newMessage);
+
+    res.status(201).json({
+      success: true,
+      message: insertMessage,
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: {
+        errorMessage: "Internal Server Error",
+      },
+    });
+  }
+};
+
 module.exports.getMessage = async (req, res) => {
   const myId = req.myId; // myId from middleware
   const fdId = req.params.id;

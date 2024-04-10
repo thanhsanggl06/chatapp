@@ -21,7 +21,9 @@ const Friends = (props) => {
           </h4>
           <div className="msg-time">
             {msgInfo && msgInfo.senderId === id ? <span>Bạn :</span> : <span></span>}
-            {msgInfo.recall ? (
+            {msgInfo.deletedBy?.includes(id) ? (
+              ""
+            ) : msgInfo.recall ? (
               <span>Tin nhắn đã thu hồi</span>
             ) : msgInfo && msgInfo.message?.text ? (
               <span>{msgInfo.message.text.slice(0, 10) + "..."}</span>
