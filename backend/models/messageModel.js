@@ -37,6 +37,10 @@ const messageSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    deletedBy: {
+      type: [],
+      default: [],
+    },
   },
   { timestamps: true }
 );

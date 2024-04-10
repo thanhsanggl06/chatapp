@@ -7,7 +7,7 @@ import { useDispatch } from "react-redux";
 import axios from "axios";
 import { addMembersToGroup } from "../store/actions/messengerAction";
 
-const AddMemberModal = ({ isOpen, onClose, members, currentFriend }) => {
+const AddMemberModal = ({ isOpen, onClose, members, currentFriend, socket, myInfo }) => {
   const alert = useAlert();
   const dispatch = useDispatch();
   const [selectedUser, setSelectedUser] = useState([]);
@@ -27,17 +27,23 @@ const AddMemberModal = ({ isOpen, onClose, members, currentFriend }) => {
     }
   };
 
-  const handleAddMember = () => {
+  const handleAddMember = async () => {
     if (window.confirm("Bạn có chắc chắn muốn thêm những thành viên này vào nhóm?")) {
       const newMembers = selectedUser.map((u) => ({
         userId: u._id.toString(),
         role: "member",
       }));
-      dispatch(addMembersToGroup(currentFriend._id, newMembers));
+      const rs = await dispatch(addMembersToGroup(currentFriend._id, newMembers));
       setSelectedUser([]);
       setSearchResult([]);
       setSearch("");
       onClose();
+      if (rs) {
+        const otherMembersId = membersId.filter((id) => id !== myInfo.id);
+        socket.current.emit("memberChange", { groupId: currentFriend?._id, membersId: otherMembersId });
+        socket.current.emit("groupEvent", { removeMember: false, newMembers });
+        alert.success("Thêm thành viên mới thành công");
+      }
     }
   };
 

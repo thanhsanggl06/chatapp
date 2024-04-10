@@ -2,6 +2,7 @@ import axios from "axios";
 import {
   ADD_MEMBER_TO_GROUP_SUCCESS,
   CREATE_NEW_GROUP_SUCCESS,
+  DELETE_MESSAGE_SUCCESS,
   FRIEND_GET_SUCCESS,
   GET_MEMBER_SUCCESS,
   GET_REQUEST_ADD_FRIEND_SUCCESS,
@@ -117,8 +118,10 @@ export const createNewGroup = (data) => {
           message: response.data.message,
         },
       });
+      return true;
     } catch (error) {
       console.log(error);
+      return false;
     }
   };
 };
@@ -126,14 +129,19 @@ export const createNewGroup = (data) => {
 export const leaveGroup = (grId) => async (dispatch) => {
   try {
     const response = await axios.delete(`/api/leave-group/${grId}`);
-    dispatch({
-      type: LEAVE_GROUP_SUCCESS,
-      payload: {
-        message: grId,
-      },
-    });
+    if (response.data.success) {
+      dispatch({
+        type: LEAVE_GROUP_SUCCESS,
+        payload: {
+          message: grId,
+        },
+      });
+      return true;
+    }
+    return false;
   } catch (error) {
     console.log(error.response.message);
+    return false;
   }
 };
 
@@ -176,14 +184,19 @@ export const getRequestAddFriends = () => async (dispatch) => {
 export const removeMember = (groupId, userId) => async (dispatch) => {
   try {
     const response = await axios.delete(`/api/group/${groupId}/remove-member/${userId}`);
-    dispatch({
-      type: REMOVE_MEMBER_SUCCESS,
-      payload: {
-        message: userId,
-      },
-    });
+    if (response.data.success) {
+      dispatch({
+        type: REMOVE_MEMBER_SUCCESS,
+        payload: {
+          message: userId,
+        },
+      });
+      return true;
+    }
+    return false;
   } catch (error) {
     console.log(error.response.message);
+    return false;
   }
 };
 
@@ -196,8 +209,10 @@ export const addMembersToGroup = (groupId, newMembersId) => async (dispatch) => 
         message: response.data.members,
       },
     });
+    return true;
   } catch (error) {
     console.log(error.response.message);
+    return false;
   }
 };
 
@@ -212,6 +227,26 @@ export const recallMessageAction = (message) => async (dispatch) => {
     });
   } catch (error) {
     console.log(error);
+  }
+};
+
+export const deleteMessageAction = (message, userId) => async (dispatch) => {
+  try {
+    const response = await axios.post(`/api/delete-message`, message);
+    if (response.data.success) {
+      dispatch({
+        type: DELETE_MESSAGE_SUCCESS,
+        payload: {
+          message: message,
+          deletedBy: userId,
+        },
+      });
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.log(error);
+    return false;
   }
 };
 

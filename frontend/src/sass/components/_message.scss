@@ -59,26 +59,18 @@
           overflow: hidden;
           object-fit: cover;
         }
-        .more:hover .icon {
-          color: #ccc;
-        }
         .more {
           cursor: pointer;
           position: absolute;
           top: 45%;
-          left: -20px;
+          left: -40px;
           display: none;
           z-index: 1;
-          .message-more-menu {
-            position: absolute;
-            top: 10px;
-            right: 0;
-            width: 50px;
-            height: 50px;
-            background-color: #accff5;
-            display: none;
+          .icon:hover {
+            color: #ccc;
           }
           .icon {
+            margin: 2px;
             font-size: larger;
           }
         }
@@ -117,6 +109,7 @@
         margin-bottom: 2px;
         padding-bottom: 0px;
         background-color: white;
+        position: relative;
         img {
           width: 220px;
           height: 270px;
@@ -124,6 +117,21 @@
           border-radius: 5px;
           overflow: hidden;
           object-fit: cover;
+        }
+        .more {
+          cursor: pointer;
+          position: absolute;
+          top: 45%;
+          right: -20px;
+          display: none;
+          z-index: 1;
+          .icon:hover {
+            color: #ccc;
+          }
+          .icon {
+            margin: 2px;
+            font-size: larger;
+          }
         }
       }
     }
@@ -160,12 +168,16 @@
   display: block;
 }
 
+.message-show .fd-message .fd-text .message-text:hover .more {
+  display: block;
+}
+
 .message-show .my-message .my-text .message-text::after {
   content: "";
   position: absolute;
   top: 0%;
-  left: -20px;
-  width: 20px;
+  left: -40px;
+  width: 40px;
   height: 100%;
   background-color: rgba(216, 32, 32, 0);
   // z-index: -1;

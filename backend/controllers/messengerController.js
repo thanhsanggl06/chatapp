@@ -725,3 +725,26 @@ module.exports.promoteToSubAdmin = async (req, res) => {
     });
   }
 };
+
+module.exports.deleteMessage = async (req, res) => {
+  try {
+    const myId = req.myId;
+    const messageId = req.body._id;
+    const message = await messageModel.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ success: false, message: "Message not found" });
+    }
+
+    message.deletedBy.push(myId);
+    await message.save();
+    return res.status(200).json({ success: true, message: "deleted message success" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      error: {
+        errorMessage: "Internal Sever Error ",
+      },
+    });
+  }
+};

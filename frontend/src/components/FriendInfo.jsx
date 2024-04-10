@@ -18,29 +18,39 @@ const FriendInfo = (props) => {
     setModalAddMember(false);
   };
 
-  const { currentFriend, activeFriends, members, myInfo, friends, setCurrentFriend } = props;
+  const { currentFriend, activeFriends, members, myInfo, friends, setCurrentFriend, socket } = props;
   const admin = members.find((m) => m.role === "admin");
   const admins = members.filter((m) => m.role === "admin" || m.role === "subadmin").map((m) => m.userId._id);
   const friendIds = friends.map((f) => f.fndInfo._id);
+
   const deleteMember = async (userId) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa thành viên này?")) {
       try {
-        await dispatch(removeMember(currentFriend._id, userId));
-        alert.success("Xóa thành viên ra khỏi đoạn chat thành công!");
+        const rs = await dispatch(removeMember(currentFriend._id, userId));
+        if (rs) {
+          const otherMembersId = members.map((m) => m.userId._id).filter((id) => id !== myInfo.id);
+          alert.success("Xóa thành viên ra khỏi đoạn chat thành công!");
+          socket.current.emit("memberChange", { groupId: currentFriend?._id, membersId: otherMembersId });
+          socket.current.emit("groupEvent", { removeMember: true, newMembers: [{ userId: userId }], groupId: currentFriend._id });
+        }
       } catch (error) {
         alert.error("Xóa thành viên không thành công!");
       }
     }
   };
 
-  const handleLeaveGroup = () => {
+  const handleLeaveGroup = async () => {
     if (window.confirm("Bạn có chắc chắn muốn rời khỏi nhóm?")) {
       try {
-        dispatch(leaveGroup(currentFriend._id));
-        setCurrentFriend("");
-        alert.success("Rời nhóm thành công!");
+        const rs = await dispatch(leaveGroup(currentFriend._id));
+        if (rs) {
+          const otherMembersId = members.map((m) => m.userId._id).filter((id) => id !== myInfo.id);
+          setCurrentFriend("");
+          alert.success("Rời nhóm thành công!");
+          socket.current.emit("memberChange", { groupId: currentFriend?._id, membersId: otherMembersId });
+        }
       } catch (error) {
-        alert.error("Rời nhóm không thành công!");
+        alert.error("Xảy ra lỗi trong quá trình rời nhóm!");
       }
     }
   };
@@ -66,7 +76,9 @@ const FriendInfo = (props) => {
       try {
         const rs = await dispatch(promoteSubAdmin(currentFriend._id, user._id));
         if (rs) {
+          const otherMembersId = members.map((m) => m.userId._id).filter((id) => id !== myInfo.id);
           alert.success("Cấp quyền thành công");
+          socket.current.emit("memberChange", { groupId: currentFriend?._id, membersId: otherMembersId });
         } else {
           alert.error("Cấp quyền không thành công!");
         }
@@ -178,7 +190,7 @@ const FriendInfo = (props) => {
         <img src="/image/16964casio-mtp-m100l-7avdf-nam-thumb-600x600.jpg" alt="" />
         <img src="/image/16964casio-mtp-m100l-7avdf-nam-thumb-600x600.jpg" alt="" />
       </div>
-      <AddMemberModal isOpen={isModalAddMemberOpen} onClose={handleCloseModal} members={members} currentFriend={currentFriend}></AddMemberModal>
+      <AddMemberModal isOpen={isModalAddMemberOpen} onClose={handleCloseModal} members={members} currentFriend={currentFriend} socket={socket} myInfo={myInfo}></AddMemberModal>
     </div>
   );
 };

@@ -4,6 +4,7 @@ import {
   ACCEPT_ADD_FRIEND_SOCKET,
   ADD_MEMBER_TO_GROUP_SUCCESS,
   CREATE_NEW_GROUP_SUCCESS,
+  DELETE_MESSAGE_SUCCESS,
   FRIEND_GET_SUCCESS,
   GET_MEMBER_SUCCESS,
   GET_REQUEST_ADD_FRIEND_SUCCESS,
@@ -182,6 +183,13 @@ export const messengerReducer = (state = messengerState, action) => {
       const conversationIndex = state.friends.findIndex((f) => f.fndInfo._id === payload.message.groupId || f.fndInfo._id === payload.message.receiverId);
       state.friends[conversationIndex].msgInfo.recall = true;
     }
+    return { ...state };
+  }
+
+  if (type === DELETE_MESSAGE_SUCCESS) {
+    //find message delete
+    const index = state.message.findIndex((m) => m._id === payload.message._id);
+    if (index >= 0) state.message[index].deletedBy = [payload.deletedBy];
     return { ...state };
   }
   if (type === RECALL_MESSAGE_SOCKET) {

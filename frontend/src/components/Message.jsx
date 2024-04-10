@@ -5,7 +5,8 @@ import { FaRegCheckCircle } from "react-icons/fa";
 import "moment/locale/vi";
 import Thumbnail from "./Thumbnail";
 import { TbMessageCircleOff } from "react-icons/tb";
-import { recallMessageAction } from "../store/actions/messengerAction";
+import { AiOutlineDelete } from "react-icons/ai";
+import { deleteMessageAction, recallMessageAction } from "../store/actions/messengerAction";
 
 const Message = ({ message, currentFriend, scrollRef, members, typingMessage, socket }) => {
   const { myInfo } = useSelector((state) => state.auth);
@@ -21,6 +22,11 @@ const Message = ({ message, currentFriend, scrollRef, members, typingMessage, so
       socket.current.emit("messageRecall", message);
     }
   };
+  const deleteMessage = (message) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa tin nhắn này ở phía bạn?")) {
+      dispatch(deleteMessageAction(message, myInfo.id));
+    }
+  };
   return (
     <>
       <div className="message-show">
@@ -30,7 +36,9 @@ const Message = ({ message, currentFriend, scrollRef, members, typingMessage, so
                 <div key={m._id} ref={scrollRef} className="my-message">
                   <div className="image-message">
                     <div className="my-text">
-                      {m.recall ? (
+                      {m.deletedBy?.includes(myInfo.id) ? (
+                        ""
+                      ) : m.recall ? (
                         <p className="message-text recall-message">
                           Tin nhắn đã thu hồi
                           <div className="time">{moment(m.createdAt).format("HH:mm")} </div>
@@ -47,9 +55,9 @@ const Message = ({ message, currentFriend, scrollRef, members, typingMessage, so
                             m.message.text
                           )}
                           <div className="time">{moment(m.createdAt).format("HH:mm")} </div>
-                          <div className="more" onClick={() => recallMessage(m)}>
-                            <TbMessageCircleOff className="icon" />
-                            {/* <div className="message-more-menu"></div> */}
+                          <div className="more">
+                            <AiOutlineDelete className="icon" onClick={() => deleteMessage(m)} />
+                            <TbMessageCircleOff className="icon" onClick={() => recallMessage(m)} />
                           </div>
                         </p>
                       )}
@@ -68,6 +76,8 @@ const Message = ({ message, currentFriend, scrollRef, members, typingMessage, so
                     </div>
                   </div>
                 </div>
+              ) : m.deletedBy?.includes(myInfo.id) ? (
+                ""
               ) : (
                 <div key={m._id} ref={scrollRef} className="fd-message">
                   {currentFriend?.name ? <span className="name">{m.senderName}</span> : ""}
@@ -99,6 +109,9 @@ const Message = ({ message, currentFriend, scrollRef, members, typingMessage, so
                               m.message.text
                             )}
                             <div className="time">{moment(m.createdAt).format("HH:mm")}</div>
+                            <div className="more">
+                              <AiOutlineDelete className="icon" onClick={() => deleteMessage(m)} />
+                            </div>
                           </p>
                         )}
                       </div>

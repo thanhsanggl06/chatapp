@@ -14,7 +14,7 @@ import useSound from "use-sound";
 import notificationSound from "../audio/notification.mp3";
 import Call from "./Call";
 import axios from "axios";
-import { ACCEPT_ADD_FRIEND, ACCEPT_ADD_FRIEND_SOCKET, RECALL_MESSAGE_CURRENT, RECALL_MESSAGE_SOCKET } from "../store/types/messengerType";
+import { ACCEPT_ADD_FRIEND, ACCEPT_ADD_FRIEND_SOCKET, LEAVE_GROUP_SUCCESS, RECALL_MESSAGE_CURRENT, RECALL_MESSAGE_SOCKET } from "../store/types/messengerType";
 import ProfileInfo from "./ProfileInfo";
 import GroupChatModal from "./GroupChatModal";
 import ReiceiverCall from "./ReiceiverCall";
@@ -45,6 +45,9 @@ const Messenger = () => {
   const [activeTab, setActiveTab] = useState("tab1");
   const [currentFriend, setCurrentFriend] = useState("");
   const [newMessage, setNewMessage] = useState("");
+  const [newGroupEvent, setNewGroupEvent] = useState(false);
+  const [removedGroup, setRemovedGroup] = useState("");
+  const [memberChange, setMemberChange] = useState({ changeStatus: false, groupId: "" });
   const [socketMessage, setSocketMessage] = useState("");
   const [recallMessage, setRecallMessage] = useState("");
   const [newRequest, setNewRequest] = useState(false);
@@ -89,7 +92,49 @@ const Messenger = () => {
       toast.success(`${senderName} vừa gửi lời mời kết bạn.`);
       setNewRequest(true);
     });
+
+    socket.current.on("groupEventResponse", (data) => {
+      if (data.groupId) {
+        dispatch({
+          type: LEAVE_GROUP_SUCCESS,
+          payload: {
+            message: data.groupId,
+          },
+        });
+        setRemovedGroup(data.groupId);
+      } else {
+        setNewGroupEvent(true);
+      }
+    });
+
+    socket.current.on("memberChangeResponse", (groupId) => {
+      setMemberChange({ changeStatus: true, groupId: groupId });
+    });
   }, []);
+
+  //realtime create group, add member
+  useEffect(() => {
+    if (newGroupEvent) {
+      dispatch(getGroups());
+      setNewGroupEvent(false);
+    }
+  }, [newGroupEvent]);
+
+  useEffect(() => {
+    if (removedGroup) {
+      if (currentFriend?._id === removedGroup) {
+        setCurrentFriend("");
+      }
+      setRemovedGroup("");
+    }
+  }, [removedGroup]);
+
+  useEffect(() => {
+    if (memberChange.changeStatus) {
+      if (currentFriend?._id === memberChange.groupId) dispatch(getGroupMembers(currentFriend?._id));
+      setMemberChange({ changeStatus: false, groupId: "" });
+    }
+  }, [memberChange.changeStatus]);
 
   useEffect(() => {
     let current = false;
@@ -611,7 +656,7 @@ const Messenger = () => {
       </div>
       <Call isOpen={isModalCallOpen} onClose={handleCloseModal} isCalling={isCalling} stream={stream} setStream={setStream} myVideo={myVideo} userVideo={userVideo}></Call>
       <ProfileInfo isOpen={profileOpen} onClose={handleCloseProfileInfo} myInfo={myInfo}></ProfileInfo>
-      <GroupChatModal isOpen={isModalGroupOpen} onClose={handleCloseModal}></GroupChatModal>
+      <GroupChatModal isOpen={isModalGroupOpen} onClose={handleCloseModal} socket={socket}></GroupChatModal>
       {/* <ReiceiverCall isOpen={isReceivingCall} onClose={handleCloseReiceiverCallModal} answerCall={answerCall} myVideo={myVideo} setStream={setStream}></ReiceiverCall> */}
     </div>
   );

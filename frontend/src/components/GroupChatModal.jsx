@@ -7,7 +7,7 @@ import { useDispatch } from "react-redux";
 import { createNewGroup } from "../store/actions/messengerAction";
 import axios from "axios";
 
-const GroupChatModal = ({ isOpen, onClose }) => {
+const GroupChatModal = ({ isOpen, onClose, socket }) => {
   const alert = useAlert();
   const dispatch = useDispatch();
   const [loadImage, setLoadImage] = useState("");
@@ -25,7 +25,7 @@ const GroupChatModal = ({ isOpen, onClose }) => {
       setSearchResult([]);
     }
   };
-  const createGroup = () => {
+  const createGroup = async () => {
     if (selectedUser.length < 2) {
       alert.error("Phải có ít nhất 3 thành viên để tạo nhóm!");
       return;
@@ -43,12 +43,16 @@ const GroupChatModal = ({ isOpen, onClose }) => {
     formData.append("name", groupName);
     formData.append("image", image);
     formData.append("members", JSON.stringify(members));
-    dispatch(createNewGroup(formData));
+    const rs = await dispatch(createNewGroup(formData));
     setSelectedUser([]);
     setImage("");
     setLoadImage("");
     setGroupName("");
     onClose();
+    if (rs) {
+      socket.current.emit("groupEvent", members);
+      alert.success("Tạo nhóm thành công!");
+    }
   };
 
   const toggleSelectUser = (userToAdd) => {

@@ -100,6 +100,33 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("groupEvent", (data) => {
+    const memberIds = data.newMembers.map((m) => m.userId);
+    const membersActive = users.filter((u) => {
+      return memberIds.includes(u.userId);
+    });
+    if (membersActive && membersActive.length > 0) {
+      membersActive.map((ma) => {
+        if (data.removeMember) {
+          socket.to(ma.socketId).emit("groupEventResponse", { groupId: data.groupId });
+        } else {
+          socket.to(ma.socketId).emit("groupEventResponse", "new event");
+        }
+      });
+    }
+  });
+
+  socket.on("memberChange", (data) => {
+    const membersActive = users.filter((u) => {
+      return data?.membersId.includes(u.userId);
+    });
+    if (membersActive && membersActive.length > 0) {
+      membersActive.map((ma) => {
+        socket.to(ma.socketId).emit("memberChangeResponse", data.groupId);
+      });
+    }
+  });
+
   socket.on("callUser", (data) => {
     const user = findFriend(data.userToCall);
     if (user !== undefined) {
