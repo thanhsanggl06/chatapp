@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { FaCaretSquareDown } from "react-icons/fa";
 import { IoIosRemoveCircleOutline, IoMdPersonAdd } from "react-icons/io";
 import { GrUserAdmin } from "react-icons/gr";

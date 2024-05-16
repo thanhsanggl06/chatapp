@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { FaEllipsisH, FaEdit, FaSistrix, FaSignOutAlt, FaUserFriends } from "react-icons/fa";
+import { FaEllipsisH, FaSistrix, FaSignOutAlt, FaUserFriends } from "react-icons/fa";
 import { MdGroups } from "react-icons/md";
 import ActiveFriend from "./ActiveFriend";
 import Friends from "./Friends";
@@ -29,9 +29,6 @@ import { ACCEPT_ADD_FRIEND, ACCEPT_ADD_FRIEND_SOCKET, LEAVE_GROUP_SUCCESS, RECAL
 import ProfileInfo from "./ProfileInfo";
 import GroupChatModal from "./GroupChatModal";
 import { useNavigate } from "react-router-dom";
-import ReiceiverCall from "./ReiceiverCall";
-import Peer from "simple-peer";
-import { FaD } from "react-icons/fa6";
 
 const Messenger = () => {
   const [notificationSPlay] = useSound(notificationSound);
@@ -43,14 +40,10 @@ const Messenger = () => {
   const navigate = useNavigate();
 
   const [isCalling, setCalling] = useState(false);
-  const [callAccepted, setCallAccepted] = useState(false);
-  const [callerSignal, setCallerSignal] = useState();
   const [isReceivingCall, setReceivingCall] = useState(false);
-  const [caller, setCaller] = useState();
   const [stream, setStream] = useState();
   const myVideo = useRef();
   const userVideo = useRef();
-  const connectionRef = useRef();
 
   const [isModalCallOpen, setModalCallOpen] = useState(false);
   const [isModalGroupOpen, setModalGroupOpen] = useState(false);

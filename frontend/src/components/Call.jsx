@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa6";
+import React, { useEffect } from "react";
+import { FaMicrophone } from "react-icons/fa6";
 import { FcEndCall } from "react-icons/fc";
 
 const Call = ({ isOpen, onClose, isCalling, stream, setStream, myVideo, userVideo }) => {

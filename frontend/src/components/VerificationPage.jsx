@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useAlert } from "react-alert";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { checkAccountVerification, checkVerifyCode, sendVerifyCode, userLogout } from "../store/actions/authAction";
 import { ERROR_MESSAGE_CLEAR, SUCCESS_MESSAGE_CLEAR } from "../store/types/authType";
 
@@ -12,7 +12,7 @@ const VerificationPage = () => {
 
   const [code, setCode] = useState("");
 
-  const { loading, authenticate, error, successMessage, myInfo, verification } = useSelector((state) => state.auth);
+  const { authenticate, error, successMessage, myInfo, verification } = useSelector((state) => state.auth);
 
   const inputHandle = (e) => {
     setCode(e.target.value);

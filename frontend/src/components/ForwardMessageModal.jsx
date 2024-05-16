@@ -2,13 +2,9 @@ import React, { useState } from "react";
 import { FaSistrix } from "react-icons/fa";
 import { IoIosRadioButtonOff, IoIosRadioButtonOn } from "react-icons/io";
 import { CiCircleRemove } from "react-icons/ci";
-import { useAlert } from "react-alert";
-import { useDispatch } from "react-redux";
 import { FaFile } from "react-icons/fa";
 
 const ForwardMessageModal = ({ isOpen, onClose, friends, messageForward, currentFriend, forwardMessage }) => {
-  const alert = useAlert();
-  const dispatch = useDispatch();
   const infoFriends = friends.map((f) => f.fndInfo).filter((f) => f._id !== currentFriend._id);
   const [selectedUser, setSelectedUser] = useState([]);
   const [searchResult, setSearchResult] = useState(infoFriends);
