@@ -5,6 +5,7 @@ const fs = require("fs");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const AWS = require("aws-sdk");
+const nodemailer = require("nodemailer");
 
 process.env.AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE = "1";
 
@@ -321,6 +322,84 @@ module.exports.userLogin = async (req, res) => {
         },
       });
     }
+  }
+};
+
+module.exports.checkVerification = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await registerModel.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User Not Found" });
+    }
+
+    return res.status(200).json({ verification: user.verification });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      error: {
+        errorMessage: ["Internal server error"],
+      },
+    });
+  }
+};
+
+module.exports.sendVerifyCode = async (req, res) => {
+  try {
+    const myId = req.myId;
+    const user = await registerModel.findById(myId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const verifyCode = await user.generateVerificationCode();
+
+    //TO DO: Send Email
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.MY_EMAIL,
+        pass: process.env.MY_PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.MY_EMAIL, // địa chỉ email của bạn
+      // to: user.email, // địa chỉ email của người nhận
+      to: "thanhsangglp06@gmail.com",
+      subject: "TEST - Mã xác minh ứng dụng Chatiuh",
+      text: `Mã xác minh của bạn là: ${verifyCode}`, // Nội dung email
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log("Gửi email thất bại:", error);
+        res.status(500).json({ message: ["Gửi email thất bại, vui lòng thử lại sau!"], success: false });
+      } else {
+        console.log("Email đã được gửi:", info.response);
+        res.status(200).json({ message: "Mã xác minh đã được gửi", success: true });
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: ["Gửi email thất bại, vui lòng thử lại sau!"], success: false, verification: false });
+  }
+};
+
+module.exports.checkVerificationCode = async (req, res) => {
+  try {
+    const { code } = req.body;
+    const myId = req.myId;
+
+    const user = await registerModel.findById(myId).select("+verificationCode +verificationCodeExpires");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    await user.checkVerificationCode(code);
+    res.status(200).json({ message: "Xác thực tài khoản thành công", verification: true, success: true });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ message: [error.message], success: false, verification: false });
   }
 };
 

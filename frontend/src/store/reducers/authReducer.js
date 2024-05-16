@@ -1,9 +1,23 @@
-import { ERROR_MESSAGE_CLEAR, LOGIN_FAIL, LOGIN_SUCCESS, LOGOUT_SUCCESS, REGISTER_FAIL, REGISTER_SUCCESS, SUCCESS_MESSAGE_CLEAR } from "../types/authType";
+import {
+  CHECK_ACCOUNT_VERIFICATION,
+  ERROR_MESSAGE_CLEAR,
+  LOGIN_FAIL,
+  LOGIN_SUCCESS,
+  LOGOUT_SUCCESS,
+  REGISTER_FAIL,
+  REGISTER_SUCCESS,
+  SEND_EMAIL_FAIL,
+  SEND_EMAIL_SUCCESS,
+  SUCCESS_MESSAGE_CLEAR,
+  VERIFY_FAIL,
+  VERIFY_SUCCESS,
+} from "../types/authType";
 import deCodeToken from "jwt-decode";
 
 const authState = {
   loading: true,
   authenticate: false,
+  verification: true,
   error: "",
   successMessage: "",
   myInfo: "",
@@ -54,6 +68,43 @@ export const authReducer = (state = authState, action) => {
     };
   }
 
+  if (type === CHECK_ACCOUNT_VERIFICATION) {
+    return {
+      ...state,
+      verification: payload.verification,
+    };
+  }
+
+  if (type === VERIFY_SUCCESS) {
+    return {
+      ...state,
+      verification: payload.verification,
+      successMessage: payload.successMessage,
+    };
+  }
+
+  if (type === VERIFY_FAIL) {
+    return {
+      ...state,
+      verification: false,
+      error: payload.error,
+    };
+  }
+
+  if (type === SEND_EMAIL_FAIL) {
+    return {
+      ...state,
+      successMessage: payload.successMessage,
+    };
+  }
+
+  if (type === SEND_EMAIL_SUCCESS) {
+    return {
+      ...state,
+      error: payload.error,
+    };
+  }
+
   if (type === SUCCESS_MESSAGE_CLEAR) {
     return {
       ...state,
@@ -73,6 +124,7 @@ export const authReducer = (state = authState, action) => {
       authenticate: false,
       successMessage: "Đăng xuất thành công",
       myInfo: "",
+      verification: true,
     };
   }
   return state;

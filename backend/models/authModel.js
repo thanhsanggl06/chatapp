@@ -1,4 +1,5 @@
 const { model, Schema } = require("mongoose");
+const crypto = require("crypto");
 
 const registerSchema = new Schema(
   {
@@ -14,6 +15,18 @@ const registerSchema = new Schema(
       type: String,
       required: true,
       select: false,
+    },
+    verification: {
+      type: Boolean,
+      default: false,
+    },
+    verificationCode: {
+      type: String,
+      select: false, // Không trả về trường này theo mặc định
+    },
+    verificationCodeExpires: {
+      type: Date,
+      select: false, // Không trả về trường này theo mặc định
     },
     image: {
       type: String,
@@ -116,6 +129,29 @@ registerSchema.methods.addFriend = async function (friendId) {
   } catch (error) {
     throw error;
   }
+};
+
+// Method to generate and save verification code with 5-minute expiration
+registerSchema.methods.generateVerificationCode = async function () {
+  const verificationCode = crypto.randomBytes(3).toString("hex"); // Tạo mã ngẫu nhiên 6 ký tự
+  this.verificationCode = verificationCode;
+  this.verificationCodeExpires = Date.now() + 5 * 60 * 1000; // Mã có hiệu lực trong 5 phút
+  await this.save();
+  return verificationCode;
+};
+
+// Method to check verification code
+registerSchema.methods.checkVerificationCode = async function (code) {
+  if (this.verificationCode !== code) {
+    throw new Error("Mã xác minh không hợp lệ");
+  }
+  if (this.verificationCodeExpires < Date.now()) {
+    throw new Error("Mã xác minh đã hết hạn");
+  }
+  this.verification = true;
+  this.verificationCode = undefined;
+  this.verificationCodeExpires = undefined;
+  await this.save();
 };
 
 module.exports = model("user", registerSchema);

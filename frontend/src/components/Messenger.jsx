@@ -17,7 +17,7 @@ import {
   getRequestAddFriends,
   forwardMessageAction,
 } from "../store/actions/messengerAction";
-import { userLogout } from "../store/actions/authAction";
+import { checkAccountVerification, sendVerifyCode, userLogout } from "../store/actions/authAction";
 import { io } from "socket.io-client";
 import { useAlert } from "react-alert";
 import toast, { Toaster } from "react-hot-toast";
@@ -28,6 +28,7 @@ import axios from "axios";
 import { ACCEPT_ADD_FRIEND, ACCEPT_ADD_FRIEND_SOCKET, LEAVE_GROUP_SUCCESS, RECALL_MESSAGE_CURRENT, RECALL_MESSAGE_SOCKET } from "../store/types/messengerType";
 import ProfileInfo from "./ProfileInfo";
 import GroupChatModal from "./GroupChatModal";
+import { useNavigate } from "react-router-dom";
 import ReiceiverCall from "./ReiceiverCall";
 import Peer from "simple-peer";
 import { FaD } from "react-icons/fa6";
@@ -39,6 +40,7 @@ const Messenger = () => {
   const scrollRef = useRef();
   const socket = useRef();
   const alert = useAlert();
+  const navigate = useNavigate();
 
   const [isCalling, setCalling] = useState(false);
   const [callAccepted, setCallAccepted] = useState(false);
@@ -65,7 +67,7 @@ const Messenger = () => {
   const [typingMessage, setTypingMessage] = useState("");
   const [activeFriends, setActiveFriends] = useState("");
   const [searchUsers, setSearchUsers] = useState("");
-  const { myInfo } = useSelector((state) => state.auth);
+  const { myInfo, verification, authenticate } = useSelector((state) => state.auth);
   const { friends, message, members, messageSendSuccess, messageGetSuccess, requestAddFriend } = useSelector((state) => state.messenger);
 
   useEffect(() => {
@@ -122,6 +124,19 @@ const Messenger = () => {
       setMemberChange({ changeStatus: true, groupId: groupId });
     });
   }, []);
+
+  //check verifycation
+
+  useEffect(() => {
+    dispatch(checkAccountVerification(myInfo.id));
+  }, []);
+
+  useEffect(() => {
+    if (!verification) {
+      navigate("/verify");
+      dispatch(sendVerifyCode());
+    }
+  }, [verification]);
 
   //realtime create group, add member
   useEffect(() => {

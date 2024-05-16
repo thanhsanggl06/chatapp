@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { userLogin } from "../store/actions/authAction";
+import { checkAccountVerification, userLogin } from "../store/actions/authAction";
 import { useDispatch, useSelector } from "react-redux";
 import { useAlert } from "react-alert";
 import { ERROR_MESSAGE_CLEAR, SUCCESS_MESSAGE_CLEAR } from "../store/types/authType";
@@ -10,7 +10,7 @@ const Login = () => {
   const navigate = useNavigate();
   const alert = useAlert();
 
-  const { loading, authenticate, error, successMessage, myInfo } = useSelector((state) => state.auth);
+  const { loading, authenticate, error, successMessage, myInfo, verification } = useSelector((state) => state.auth);
 
   const [state, setState] = useState({
     email: "",
@@ -42,7 +42,7 @@ const Login = () => {
       error.map((err) => alert.error(err));
       dispatch({ type: ERROR_MESSAGE_CLEAR });
     }
-  }, [successMessage, error, authenticate]);
+  }, [successMessage, error, authenticate, verification]);
 
   return (
     <div className="register">

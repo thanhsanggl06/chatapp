@@ -1,5 +1,16 @@
 import axios from "axios";
-import { LOGIN_FAIL, LOGIN_SUCCESS, LOGOUT_SUCCESS, REGISTER_FAIL, REGISTER_SUCCESS } from "../types/authType";
+import {
+  CHECK_ACCOUNT_VERIFICATION,
+  LOGIN_FAIL,
+  LOGIN_SUCCESS,
+  LOGOUT_SUCCESS,
+  REGISTER_FAIL,
+  REGISTER_SUCCESS,
+  SEND_EMAIL_FAIL,
+  SEND_EMAIL_SUCCESS,
+  VERIFY_FAIL,
+  VERIFY_SUCCESS,
+} from "../types/authType";
 
 export const userRegister = (data) => {
   return async (dispatch) => {
@@ -59,6 +70,50 @@ export const userLogin = (data) => {
       });
     }
   };
+};
+
+export const checkAccountVerification = (id) => async (dispatch) => {
+  try {
+    const response = await axios.post(`/api/check-verification/${id}`);
+    dispatch({
+      type: CHECK_ACCOUNT_VERIFICATION,
+      payload: {
+        verification: response.data.verification,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const sendVerifyCode = () => async (dispatch) => {
+  try {
+    const response = await axios.post(`/api/send-verify-code`);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const checkVerifyCode = (code) => async (dispatch) => {
+  try {
+    const response = await axios.post(`/api/check-verification-code`, { code: code });
+    dispatch({
+      type: VERIFY_SUCCESS,
+      payload: {
+        successMessage: response.data.message,
+        verification: response.data.verification,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    dispatch({
+      type: VERIFY_FAIL,
+      payload: {
+        error: error.response.data.message,
+        verification: error.response.data.verification,
+      },
+    });
+  }
 };
 
 export const userLogout = () => async (dispatch) => {
