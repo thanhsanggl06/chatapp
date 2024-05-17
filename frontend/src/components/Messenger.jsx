@@ -64,8 +64,8 @@ const Messenger = () => {
   const { friends, message, members, messageSendSuccess, messageGetSuccess, requestAddFriend } = useSelector((state) => state.messenger);
 
   useEffect(() => {
-    socket.current = io("ws://localhost:8000");
-    //socket.current = io("ws://54.254.206.58:8000");
+    // socket.current = io("ws://localhost:8000");
+    socket.current = io("ws://18.139.255.177:8000");
     socket.current.on("getMessage", (data) => {
       setSocketMessage(data);
     });
