@@ -124,6 +124,7 @@ const Message = ({ message, currentFriend, scrollRef, members, typingMessage, so
                             )}
                             <div className="time">{moment(m.createdAt).format("HH:mm")}</div>
                             <div className="more">
+                              <PiShareFatLight className="icon" onClick={() => openForwardModal(m)} />
                               <AiOutlineDelete className="icon" onClick={() => deleteMessage(m)} />
                             </div>
                           </p>

@@ -37,6 +37,7 @@ const VerificationPage = () => {
     }
     if (authenticate && verification) {
       navigate("/");
+      window.location.reload();
     }
     if (successMessage) {
       alert.success(successMessage);
