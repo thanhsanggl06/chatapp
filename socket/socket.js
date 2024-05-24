@@ -26,7 +26,7 @@ const userLogout = (userId) => {
 };
 
 io.on("connection", (socket) => {
-  // console.log("Socket is connecting...");
+  console.log("Socket is connecting...");
   socket.on("addUser", (userId, userInfo) => {
     addUser(userId, socket.id, userInfo);
     io.emit("getUsers", users);
@@ -138,6 +138,29 @@ io.on("connection", (socket) => {
     const user = findFriend(data.to);
     if (user !== undefined) {
       io.to(user.socketId).emit("callAccepted", data.signal);
+    }
+  });
+
+  //For call
+  socket.on("hey", (data) => {
+    console.log(data);
+    const user = findFriend(data.to);
+    if (user !== undefined) {
+      io.to(user.socketId).emit("incomingCall", { from: data.from });
+    }
+  });
+
+  socket.on("acceptCall", (data) => {
+    const user = findFriend(data.to);
+    if (user !== undefined) {
+      io.to(user.socketId).emit("callResponse", { from: data.from, accept: true, friendPeerId: data.friendPeerId });
+    }
+  });
+
+  socket.on("rejectCall", (data) => {
+    const user = findFriend(data.to);
+    if (user !== undefined) {
+      io.to(user.socketId).emit("callResponse", { from: data.from, accept: false });
     }
   });
 

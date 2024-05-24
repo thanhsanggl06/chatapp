@@ -29,6 +29,9 @@ import { ACCEPT_ADD_FRIEND, ACCEPT_ADD_FRIEND_SOCKET, LEAVE_GROUP_SUCCESS, RECAL
 import ProfileInfo from "./ProfileInfo";
 import GroupChatModal from "./GroupChatModal";
 import { useNavigate } from "react-router-dom";
+import IncomingCall from "./IncomingCall";
+import OutcomingCall from "./OutcomingCall";
+import Peer from "peerjs";
 
 const Messenger = () => {
   const [notificationSPlay] = useSound(notificationSound);
@@ -39,9 +42,21 @@ const Messenger = () => {
   const alert = useAlert();
   const navigate = useNavigate();
 
-  const [isCalling, setCalling] = useState(false);
-  const [isReceivingCall, setReceivingCall] = useState(false);
-  const [stream, setStream] = useState();
+  //for call
+  const [outcoming, setOutcoming] = useState(false);
+  const [incoming, setIncoming] = useState(false);
+  const [calling, setIsCalling] = useState(false);
+  const [modalIncoming, setModalIncoming] = useState(false);
+  const [caller, setCaller] = useState();
+  const [peerId, setPeerId] = useState(null);
+  const peer = useRef(null);
+  const [friendPeerId, setFriendPeerId] = useState();
+  const currentCall = useRef(null);
+
+  //
+
+  const [myStream, setStream] = useState();
+  const [remoteStream, setRemoteStream] = useState(null);
   const myVideo = useRef();
   const userVideo = useRef();
 
@@ -60,11 +75,11 @@ const Messenger = () => {
   const [typingMessage, setTypingMessage] = useState("");
   const [activeFriends, setActiveFriends] = useState("");
   const [searchUsers, setSearchUsers] = useState("");
-  const { myInfo, verification, authenticate } = useSelector((state) => state.auth);
+  const { myInfo, verification } = useSelector((state) => state.auth);
   const { friends, message, members, messageSendSuccess, messageGetSuccess, requestAddFriend } = useSelector((state) => state.messenger);
 
   useEffect(() => {
-    socket.current = io("ws://localhost:8000");
+    socket.current = io("ws://192.168.1.141:8000");
     // socket.current = io("ws://13.212.127.23:8000");
     socket.current.on("getMessage", (data) => {
       setSocketMessage(data);
@@ -115,6 +130,33 @@ const Messenger = () => {
 
     socket.current.on("memberChangeResponse", (groupId) => {
       setMemberChange({ changeStatus: true, groupId: groupId });
+    });
+
+    //for call
+    socket.current.on("incomingCall", (data) => {
+      incomingCall(data);
+    });
+
+    socket.current.on("callResponse", (data) => {
+      if (data.accept) {
+        setFriendPeerId(data.friendPeerId);
+        callVideo();
+      } else {
+        if (myStream) {
+          myStream.getTracks().forEach((track) => track.stop());
+          setStream(null);
+        }
+        setIsCalling(false);
+        setModalCallOpen(false);
+        setOutcoming(false);
+        setIncoming(false);
+        setModalIncoming(false);
+        setCaller();
+        if (currentCall.current) {
+          currentCall.current.close(); // Đóng cuộc gọi hiện tại
+          currentCall.current = null;
+        }
+      }
     });
   }, []);
 
@@ -522,20 +564,104 @@ const Messenger = () => {
     setActiveTab(tab);
   };
 
+  //for Call
+
   const handleCallVideo = () => {
     setModalCallOpen(true);
-    setCalling(true);
+    setOutcoming(true);
+    setCaller({ from: { id: currentFriend._id, username: currentFriend.username, image: currentFriend.image } });
+    socket.current.emit("hey", { to: currentFriend._id, from: { id: myInfo.id, username: myInfo.username, image: myInfo.image } });
     // Thêm logic xử lý khi ấn nút call video ở đây
+  };
+
+  const incomingCall = (data) => {
+    setModalIncoming(true);
+    setIncoming(true);
+    setCaller(data);
+  };
+
+  useEffect(() => {
+    const newPeer = new Peer(); // Create a new peer object
+    peer.current = newPeer;
+
+    newPeer.on("open", (id) => {
+      setPeerId(id); // Set the peer ID
+    });
+
+    // Handle incoming calls
+    newPeer.on("call", (call) => {
+      navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
+        setStream(stream);
+        call.answer(stream); // Answer the call with local stream
+        currentCall.current = call;
+        call.on("stream", (remoteStream) => {
+          if (userVideo.current) {
+            userVideo.current.srcObject = remoteStream; // Show remote stream
+          }
+        });
+
+        call.on("close", () => {
+          if (stream) {
+            stream.getTracks().forEach((track) => track.stop());
+            setStream(null);
+          }
+
+          if (myVideo.current) {
+            myVideo.current.srcObject = null;
+          }
+
+          if (userVideo.current) {
+            userVideo.current.srcObject = null;
+          }
+
+          if (currentCall.current) {
+            currentCall.current.close(); // Đóng cuộc gọi hiện tại
+            currentCall.current = null;
+          }
+        });
+      });
+    });
+
+    // Cleanup function
+    return () => {
+      if (myStream) {
+        myStream.getTracks().forEach((track) => track.stop());
+      }
+      if (peer.current) {
+        peer.current.destroy();
+      }
+    };
+  }, []);
+
+  const acceptCall = () => {
+    callVideo();
+    socket.current.emit("acceptCall", { to: caller.from.id, from: { id: myInfo.id, username: myInfo.username, image: myInfo.image }, friendPeerId: peerId });
+  };
+
+  const callVideo = () => {
+    setIsCalling(true);
+    setModalIncoming(false);
+    setModalCallOpen(false);
+  };
+
+  const handleRejectCall = () => {
+    setIsCalling(false);
+    setModalCallOpen(false);
+    setOutcoming(false);
+    setIncoming(false);
+    setModalIncoming(false);
+    socket.current.emit("rejectCall", { to: caller.from.id, from: { id: myInfo.id, username: myInfo.username, image: myInfo.image } });
+    setCaller();
+    if (currentCall.current) {
+      currentCall.current.close(); // Đóng cuộc gọi hiện tại
+      currentCall.current = null;
+    }
   };
 
   const handleCloseModal = () => {
     setModalGroupOpen(false);
     setModalCallOpen(false);
-    setCalling(false);
-  };
-
-  const handleCloseReiceiverCallModal = () => {
-    setReceivingCall(false);
+    setIsCalling(false);
   };
 
   const handleOpenProfileInfo = () => {
@@ -710,7 +836,7 @@ const Messenger = () => {
             myInfo={myInfo}
             friends={friends}
             setCurrentFriend={setCurrentFriend}
-            setCalling={setCalling}
+            setCalling={setIsCalling}
             socket={socket}
             forwardMessage={forwardMessage}
           />
@@ -723,7 +849,23 @@ const Messenger = () => {
           </div>
         )}
       </div>
-      <Call isOpen={isModalCallOpen} onClose={handleCloseModal} isCalling={isCalling} stream={stream} setStream={setStream} myVideo={myVideo} userVideo={userVideo}></Call>
+      <Call
+        isOpen={calling}
+        onClose={handleRejectCall}
+        myStream={myStream}
+        setStream={setStream}
+        myVideo={myVideo}
+        userVideo={userVideo}
+        remoteStream={remoteStream}
+        setRemoteStream={setRemoteStream}
+        peer={peer}
+        peerId={peerId}
+        setPeerId={setPeerId}
+        friendPeerId={friendPeerId}
+        currentCall={currentCall}
+      ></Call>
+      <OutcomingCall isOpen={isModalCallOpen} callerName={currentFriend.username} callerAvatar={currentFriend.image} onReject={handleRejectCall}></OutcomingCall>
+      <IncomingCall isOpen={modalIncoming} callerName={caller?.from?.username} callerAvatar={caller?.from?.image} onReject={handleRejectCall} onAccept={acceptCall}></IncomingCall>
       <ProfileInfo isOpen={profileOpen} onClose={handleCloseProfileInfo} myInfo={myInfo}></ProfileInfo>
       <GroupChatModal isOpen={isModalGroupOpen} onClose={handleCloseModal} socket={socket}></GroupChatModal>
       {/* <ReiceiverCall isOpen={isReceivingCall} onClose={handleCloseReiceiverCallModal} answerCall={answerCall} myVideo={myVideo} setStream={setStream}></ReiceiverCall> */}

@@ -2,28 +2,55 @@ import React, { useEffect } from "react";
 import { FaMicrophone } from "react-icons/fa6";
 import { FcEndCall } from "react-icons/fc";
 
-const Call = ({ isOpen, onClose, isCalling, stream, setStream, myVideo, userVideo }) => {
+const Call = ({ isOpen, onClose, myStream, setStream, myVideo, userVideo, peer, friendPeerId, currentCall }) => {
   useEffect(() => {
-    if (isCalling) {
-      navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
-        setStream(stream);
-        if (myVideo.current) {
-          myVideo.current.srcObject = stream;
-        }
-      });
-    } else {
-      if (stream) {
-        stream.getTracks().forEach((track) => {
-          track.stop();
-        });
-        setStream(null);
-      }
+    if (isOpen) {
+      navigator.mediaDevices
+        .getUserMedia({ video: true, audio: true })
+        .then((stream) => {
+          setStream(stream);
+          if (myVideo.current) {
+            myVideo.current.srcObject = stream;
+          }
+          const call = peer.current.call(friendPeerId, stream);
+          currentCall.current = call;
+          call.on("stream", (remoteStream) => {
+            if (userVideo.current) {
+              userVideo.current.srcObject = remoteStream;
+            }
+          });
 
-      if (myVideo.current) {
-        myVideo.current.srcObject = null;
-      }
+          call.on("close", () => {
+            endCall();
+          });
+        })
+        .catch((error) => {
+          console.error("Failed to get local stream", error);
+        });
+    } else {
+      endCall();
     }
-  }, [isCalling]);
+  }, [isOpen]);
+
+  const endCall = () => {
+    if (myStream) {
+      myStream.getTracks().forEach((track) => track.stop());
+      setStream(null);
+    }
+
+    if (myVideo.current) {
+      myVideo.current.srcObject = null;
+    }
+
+    if (userVideo.current) {
+      userVideo.current.srcObject = null;
+    }
+
+    if (currentCall.current) {
+      currentCall.current.close(); // Đóng cuộc gọi hiện tại
+      currentCall.current = null;
+    }
+  };
 
   return (
     <div className={`modal ${isOpen ? "open" : ""}`}>
@@ -37,7 +64,7 @@ const Call = ({ isOpen, onClose, isCalling, stream, setStream, myVideo, userVide
         <div className="modal-body">
           <div className="video-container">
             <div className="friend-video">
-              <video ref={userVideo} muted playsInline autoPlay />
+              <video ref={userVideo} playsInline autoPlay />
               <div className="my-video">
                 <video ref={myVideo} muted playsInline autoPlay />
               </div>
@@ -49,7 +76,7 @@ const Call = ({ isOpen, onClose, isCalling, stream, setStream, myVideo, userVide
             <div className="icon">
               <FaMicrophone />
             </div>
-            <div className="icon">
+            <div className="icon" onClick={onClose}>
               <FcEndCall />
             </div>
           </div>

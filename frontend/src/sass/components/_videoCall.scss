@@ -1,0 +1,77 @@
+.video-call-interface {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none; /* Mặc định ẩn modal */
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Màu nền mờ */
+  z-index: 10; /* Đảm bảo lớp mờ hiển thị trên cùng */
+}
+
+.video-container {
+  position: relative;
+}
+
+.local-video,
+.remote-video {
+  width: 300px;
+  height: 200px;
+  border-radius: 10px;
+  overflow: hidden;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.local-video p,
+.remote-video p {
+  font-size: 18px;
+  color: #fff;
+  text-align: center;
+  margin: 0;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.5); /* Màu nền cho text */
+}
+
+.call-controls {
+  display: flex;
+  justify-content: center;
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.end-call-btn,
+.mute-audio-btn,
+.mute-video-btn {
+  margin: 0 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.end-call-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+.mute-audio-btn,
+.mute-video-btn {
+  background-color: #4caf50;
+  color: white;
+}

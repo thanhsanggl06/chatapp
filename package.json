@@ -26,6 +26,7 @@
     "mongoose": "^6.1.8",
     "nodemailer": "^6.9.13",
     "nodemon": "^2.0.15",
+    "peerjs": "^1.5.4",
     "simple-peer": "^9.9.3",
     "validator": "^13.7.0"
   }

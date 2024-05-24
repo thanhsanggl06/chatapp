@@ -1,0 +1,58 @@
+/* styles.css */
+.incoming-call-background {
+  background-color: #f8f9fa; /* Màu nền cho phần incoming-call */
+  border-radius: 10px; /* Bo tròn các góc */
+  padding: 20px; /* Khoảng cách giữa nội dung và viền */
+  max-width: 50vh; /* Chiều rộng tối đa là 90% của màn hình */
+  height: 90vh;
+  margin: auto; /* Canh giữa theo cả chiều ngang và chiều dọc */
+}
+
+.incoming-call {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.caller-info {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.caller-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
+.caller-name {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+
+.call-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.accept-call-btn,
+.reject-call-btn {
+  padding: 10px 20px;
+  margin: 0 10px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.accept-call-btn {
+  background-color: #4caf50;
+  color: white;
+}
+
+.reject-call-btn {
+  background-color: #f44336;
+  color: white;
+}
