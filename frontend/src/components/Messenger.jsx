@@ -585,7 +585,23 @@ const Messenger = () => {
       host: "13.212.127.23",
       port: 9000,
       path: "/myapp",
-      secuse: false,
+      config: {
+        iceServers: [
+          { urls: ["stun:hk-turn1.xirsys.com"] },
+          {
+            username: "Jr-m_oZKLNSN116yrUctmvT8fImWG20taUhcYm6p9w4CCyz-RHHBmrwxOmtrw91qAAAAAGZS7cd0aGFuaHNhbmdnbHAwNg==",
+            credential: "02f62eea-1b37-11ef-b303-0242ac120004",
+            urls: [
+              "turn:hk-turn1.xirsys.com:80?transport=udp",
+              "turn:hk-turn1.xirsys.com:3478?transport=udp",
+              "turn:hk-turn1.xirsys.com:80?transport=tcp",
+              "turn:hk-turn1.xirsys.com:3478?transport=tcp",
+              "turns:hk-turn1.xirsys.com:443?transport=tcp",
+              "turns:hk-turn1.xirsys.com:5349?transport=tcp",
+            ],
+          },
+        ],
+      },
     });
     peer.current = newPeer;
 
