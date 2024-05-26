@@ -79,8 +79,8 @@ const Messenger = () => {
   const { friends, message, members, messageSendSuccess, messageGetSuccess, requestAddFriend } = useSelector((state) => state.messenger);
 
   useEffect(() => {
-    socket.current = io("ws://192.168.1.141:8000");
-    // socket.current = io("ws://13.212.127.23:8000");
+    // socket.current = io("ws://192.168.1.141:8000");
+    socket.current = io("ws://13.212.127.23:8000");
     socket.current.on("getMessage", (data) => {
       setSocketMessage(data);
     });
@@ -581,7 +581,12 @@ const Messenger = () => {
   };
 
   useEffect(() => {
-    const newPeer = new Peer(); // Create a new peer object
+    const newPeer = new Peer({
+      host: "13.212.127.23",
+      port: 9000,
+      path: "/myapp",
+      secuse: false,
+    });
     peer.current = newPeer;
 
     newPeer.on("open", (id) => {
@@ -592,6 +597,7 @@ const Messenger = () => {
     newPeer.on("call", (call) => {
       navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
         setStream(stream);
+        myVideo.current.srcObject = stream;
         call.answer(stream); // Answer the call with local stream
         currentCall.current = call;
         call.on("stream", (remoteStream) => {
@@ -863,6 +869,7 @@ const Messenger = () => {
         setPeerId={setPeerId}
         friendPeerId={friendPeerId}
         currentCall={currentCall}
+        outcoming={outcoming}
       ></Call>
       <OutcomingCall isOpen={isModalCallOpen} callerName={currentFriend.username} callerAvatar={currentFriend.image} onReject={handleRejectCall}></OutcomingCall>
       <IncomingCall isOpen={modalIncoming} callerName={caller?.from?.username} callerAvatar={caller?.from?.image} onReject={handleRejectCall} onAccept={acceptCall}></IncomingCall>

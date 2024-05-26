@@ -2,31 +2,38 @@ import React, { useEffect } from "react";
 import { FaMicrophone } from "react-icons/fa6";
 import { FcEndCall } from "react-icons/fc";
 
-const Call = ({ isOpen, onClose, myStream, setStream, myVideo, userVideo, peer, friendPeerId, currentCall }) => {
+const Call = ({ isOpen, onClose, myStream, setStream, myVideo, userVideo, peer, friendPeerId, currentCall, outcoming }) => {
   useEffect(() => {
     if (isOpen) {
-      navigator.mediaDevices
-        .getUserMedia({ video: true, audio: true })
-        .then((stream) => {
-          setStream(stream);
-          if (myVideo.current) {
-            myVideo.current.srcObject = stream;
-          }
-          const call = peer.current.call(friendPeerId, stream);
-          currentCall.current = call;
-          call.on("stream", (remoteStream) => {
-            if (userVideo.current) {
-              userVideo.current.srcObject = remoteStream;
+      if (outcoming) {
+        navigator.mediaDevices
+          .getUserMedia({ video: true, audio: true })
+          .then((stream) => {
+            setStream(stream);
+            if (myVideo.current) {
+              myVideo.current.srcObject = stream;
             }
-          });
+            const call = peer.current.call(friendPeerId, stream);
+            currentCall.current = call;
+            call.on("stream", (remoteStream) => {
+              if (userVideo.current) {
+                userVideo.current.srcObject = remoteStream;
+              }
+            });
 
-          call.on("close", () => {
-            endCall();
+            call.on("close", () => {
+              endCall();
+            });
+
+            call.on("error", (err) => {
+              console.error("Call error: ", err);
+              endCall();
+            });
+          })
+          .catch((error) => {
+            console.error("Failed to get local stream", error);
           });
-        })
-        .catch((error) => {
-          console.error("Failed to get local stream", error);
-        });
+      }
     } else {
       endCall();
     }

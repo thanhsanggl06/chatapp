@@ -4,6 +4,14 @@ import { FaPlusCircle, FaFileImage, FaGift, FaPaperPlane } from "react-icons/fa"
 const MessageSend = ({ inputHandle, newMessage, sendMessage, emojiSend, imageSend }) => {
   const emojis = ["😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "😝", "😜", "🧐", "🤓", "😎", "😕", "🤑", "🥴", "😱"];
 
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      // Gọi hàm bạn muốn thực hiện khi nhấn Enter
+      sendMessage(event);
+    }
+  };
+
   return (
     <div className="message-send-section">
       <input type="checkbox" id="emoji" />
@@ -33,7 +41,7 @@ const MessageSend = ({ inputHandle, newMessage, sendMessage, emojiSend, imageSen
       </div> */}
 
       <div className="message-type">
-        <input type="text" name="message" onChange={inputHandle} id="message" placeholder="Aa" className="form-control" value={newMessage} />
+        <input type="text" name="message" onChange={inputHandle} id="message" placeholder="Aa" className="form-control" value={newMessage} onKeyDown={handleKeyDown} />
 
         <div className="file hover-gift">
           <label htmlFor="emoji"> ☺️</label>
